@@ -186,6 +186,20 @@
             margin-top: 2px;
         }
 
+        .geol-legend {
+            display: none;
+            margin-top: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .geol-legend img {
+            display: block;
+            width: 100%;
+        }
+
         .opacity-value {
             font-size: 11px;
             color: #999;
@@ -454,6 +468,9 @@
                     <span class="slider-label">Opacity</span>
                     <input type="range" id="geol-ca-opacity" min="0" max="100" value="50">
                     <span class="opacity-value" id="geol-ca-opacity-val">50%</span>
+                </div>
+                <div class="geol-legend" id="geol-ca-legend">
+                    <img loading="lazy" src="https://maps-cartes.services.geo.ca/server_serveur/services/NRCan/cdn_geol_compil_en/MapServer/WMSServer?request=GetLegendGraphic&version=1.1.1&format=image/png&layer=0" alt="Canada geological legend">
                 </div>
             </div>
         </div>
@@ -753,15 +770,17 @@
         // LAYER CONTROLS
         // =========================================================
 
-        function setupLayerControl(layerId, toggleId, sliderId, valueId, opacityProp) {
+        function setupLayerControl(layerId, toggleId, sliderId, valueId, opacityProp, legendId) {
             var toggle = document.getElementById(toggleId);
             var slider = document.getElementById(sliderId);
             var valueDisplay = document.getElementById(valueId);
+            var legend = legendId ? document.getElementById(legendId) : null;
             var prop = opacityProp || 'raster-opacity';
 
             toggle.addEventListener('change', function() {
                 map.setLayoutProperty(layerId, 'visibility',
                     this.checked ? 'visible' : 'none');
+                if (legend) legend.style.display = this.checked ? 'block' : 'none';
             });
 
             slider.addEventListener('input', function() {
@@ -798,7 +817,7 @@
         setupLayerControl('geol-es-layer', 'geol-es-toggle', 'geol-es-opacity', 'geol-es-opacity-val');
         setupLayerControl('geol-fr-layer', 'geol-fr-toggle', 'geol-fr-opacity', 'geol-fr-opacity-val');
         setupLayerControl('geol-uk-layer', 'geol-uk-toggle', 'geol-uk-opacity', 'geol-uk-opacity-val');
-        setupLayerControl('geol-ca-layer', 'geol-ca-toggle', 'geol-ca-opacity', 'geol-ca-opacity-val');
+        setupLayerControl('geol-ca-layer', 'geol-ca-toggle', 'geol-ca-opacity', 'geol-ca-opacity-val', null, 'geol-ca-legend');
     });
 
     // =========================================================
