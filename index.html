@@ -151,6 +151,41 @@
             padding: 4px 0 8px;
         }
 
+        .geol-group-body.open {
+            max-height: 500px;
+        }
+
+        .geol-item {
+            padding: 4px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .geol-item:first-of-type {
+            border-top: none;
+        }
+
+        .geol-item label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #444;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .geol-item label input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #2d6a4f;
+            cursor: pointer;
+        }
+
+        .geol-item .slider-row {
+            margin-top: 2px;
+        }
+
         .opacity-value {
             font-size: 11px;
             color: #999;
@@ -289,10 +324,10 @@
 
 <!-- Control Panel -->
 <div id="controls">
-    <h2 id="panel-title">PhysicalEarth <span class="panel-arrow">&#9654;</span></h2>
+    <h2 id="panel-title">PhysicalEarth <span class="panel-arrow open">&#9654;</span></h2>
     <p class="subtitle" id="panel-subtitle">The atlas the internet is missing</p>
 
-    <div id="layers-list">
+    <div id="layers-list" class="open">
     <!-- Hypsometric Tints -->
     <div class="layer-group">
         <div class="layer-header">
@@ -318,8 +353,8 @@
         <div class="layer-body">
             <div class="slider-row">
                 <span class="slider-label">Opacity</span>
-                <input type="range" id="bathy-opacity" min="0" max="100" value="60">
-                <span class="opacity-value" id="bathy-opacity-val">60%</span>
+                <input type="range" id="bathy-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="bathy-opacity-val">100%</span>
             </div>
             <p class="layer-description">Ocean depth. Data: <a href="https://emodnet.ec.europa.eu" style="color:#2d6a4f">EMODnet</a></p>
         </div>
@@ -345,79 +380,82 @@
     <div class="layer-group">
         <div class="layer-header">
             <label><input type="checkbox" id="osm-toggle" checked> OpenStreetMap</label>
-            <button class="expand-btn">&#9654;</button>
+            <button class="expand-btn open">&#9654;</button>
         </div>
-        <div class="layer-body">
+        <div class="layer-body open">
             <div class="slider-row">
                 <span class="slider-label">Opacity</span>
-                <input type="range" id="osm-opacity" min="0" max="100" value="40">
-                <span class="opacity-value" id="osm-opacity-val">40%</span>
+                <input type="range" id="osm-opacity" min="0" max="100" value="0">
+                <span class="opacity-value" id="osm-opacity-val">0%</span>
             </div>
             <p class="layer-description">Labels, roads, borders, and geographic detail</p>
         </div>
     </div>
 
-    <!-- Geology: Spain -->
+    <!-- Rivers -->
     <div class="layer-group">
         <div class="layer-header">
-            <label><input type="checkbox" id="geol-es-toggle"> Geology: Spain</label>
+            <label><input type="checkbox" id="rivers-toggle" checked> Rivers</label>
             <button class="expand-btn">&#9654;</button>
         </div>
         <div class="layer-body">
             <div class="slider-row">
                 <span class="slider-label">Opacity</span>
-                <input type="range" id="geol-es-opacity" min="0" max="100" value="50">
-                <span class="opacity-value" id="geol-es-opacity-val">50%</span>
+                <input type="range" id="rivers-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="rivers-opacity-val">100%</span>
             </div>
-            <p class="layer-description">1:1M. &#169;CN <a href="https://www.igme.es" style="color:#2d6a4f">IGME</a> (CORS issue — may not load)</p>
+            <p class="layer-description">Major rivers. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a> 10m</p>
         </div>
     </div>
 
-    <!-- Geology: France -->
+    <!-- Geology group -->
     <div class="layer-group">
         <div class="layer-header">
-            <label><input type="checkbox" id="geol-fr-toggle"> Geology: France</label>
+            <label style="font-weight:700; color:#555; cursor:default;">Geology</label>
             <button class="expand-btn">&#9654;</button>
         </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="geol-fr-opacity" min="0" max="100" value="50">
-                <span class="opacity-value" id="geol-fr-opacity-val">50%</span>
-            </div>
-            <p class="layer-description">1:1M. &#169; <a href="https://www.brgm.fr" style="color:#2d6a4f">BRGM</a></p>
-        </div>
-    </div>
+        <div class="layer-body geol-group-body">
+            <p class="layer-description" style="margin-bottom:6px">National geological survey overlays</p>
 
-    <!-- Geology: UK -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="geol-uk-toggle"> Geology: UK</label>
-            <button class="expand-btn">&#9654;</button>
-        </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="geol-uk-opacity" min="0" max="100" value="50">
-                <span class="opacity-value" id="geol-uk-opacity-val">50%</span>
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-es-toggle"> Spain</label>
+                <span class="layer-description">1:1M &#169;CN <a href="https://www.igme.es" style="color:#2d6a4f">IGME</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-es-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-es-opacity-val">50%</span>
+                </div>
             </div>
-            <p class="layer-description">625K Bedrock. &#169; <a href="https://www.bgs.ac.uk" style="color:#2d6a4f">BGS</a>/UKRI</p>
-        </div>
-    </div>
 
-    <!-- Geology: Canada -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="geol-ca-toggle"> Geology: Canada</label>
-            <button class="expand-btn">&#9654;</button>
-        </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="geol-ca-opacity" min="0" max="100" value="50">
-                <span class="opacity-value" id="geol-ca-opacity-val">50%</span>
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-fr-toggle"> France</label>
+                <span class="layer-description">1:1M &#169; <a href="https://www.brgm.fr" style="color:#2d6a4f">BRGM</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-fr-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-fr-opacity-val">50%</span>
+                </div>
             </div>
-            <p class="layer-description">Compilation. &#169; <a href="https://natural-resources.canada.ca" style="color:#2d6a4f">NRCan</a></p>
+
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-uk-toggle"> UK</label>
+                <span class="layer-description">625K Bedrock &#169; <a href="https://www.bgs.ac.uk" style="color:#2d6a4f">BGS</a>/UKRI</span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-uk-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-uk-opacity-val">50%</span>
+                </div>
+            </div>
+
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-ca-toggle"> Canada</label>
+                <span class="layer-description">Compilation &#169; <a href="https://natural-resources.canada.ca" style="color:#2d6a4f">NRCan</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-ca-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-ca-opacity-val">50%</span>
+                </div>
+            </div>
         </div>
     </div>
     </div><!-- /layers-list -->
@@ -520,6 +558,7 @@
         container: 'map',
         style: {
             version: 8,
+            glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
             sources: {},
             layers: []
         },
@@ -569,7 +608,7 @@
             type: 'raster',
             source: 'bathy-tiles',
             paint: {
-                'raster-opacity': 0.6
+                'raster-opacity': 1.0
             }
         });
 
@@ -601,7 +640,7 @@
             type: 'raster',
             source: 'osm-tiles',
             paint: {
-                'raster-opacity': 0.40
+                'raster-opacity': 0
             }
         });
 
@@ -638,6 +677,78 @@
         addGeologyWMS('geol-uk', SOURCES.geol_uk);
         addGeologyWMS('geol-ca', SOURCES.geol_ca);
 
+        // --- RIVERS (Natural Earth 50m) ---
+        map.addSource('rivers', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_rivers_lake_centerlines.geojson',
+            attribution: '<a href="https://www.naturalearthdata.com">Natural Earth</a>'
+        });
+
+        // River lines: blue, width scaled by importance
+        map.addLayer({
+            id: 'rivers-line',
+            type: 'line',
+            source: 'rivers',
+            filter: ['all',
+                ['==', ['get', 'featurecla'], 'River'],
+                ['<=', ['get', 'scalerank'],
+                    ['interpolate', ['linear'], ['zoom'],
+                        2, 4,   4, 6,   5, 8,   6, 10,   7, 12]
+                ]
+            ],
+            layout: {
+                'line-cap': 'round',
+                'line-join': 'round'
+            },
+            paint: {
+                'line-color': '#3a7eb8',
+                'line-opacity': 1.0,
+                'line-width': [
+                    'interpolate', ['linear'], ['zoom'],
+                    2, ['match', ['get', 'scalerank'],
+                        0, 4,  1, 3,  2, 2.5,  3, 2,  4, 1.5,  5, 1,  6, 0.8,  7, 0.6,  0.4],
+                    6, ['match', ['get', 'scalerank'],
+                        0, 7,  1, 5.5,  2, 4.5,  3, 3.5,  4, 3,  5, 2.5,  6, 2,  7, 1.5,  1],
+                    10, ['match', ['get', 'scalerank'],
+                        0, 12,  1, 9,  2, 7,  3, 5.5,  4, 4.5,  5, 3.5,  6, 3,  7, 2.5,  2],
+                    14, ['match', ['get', 'scalerank'],
+                        0, 16,  1, 13,  2, 10,  3, 8,  4, 6,  5, 5,  6, 4,  7, 3,  2.5]
+                ]
+            }
+        });
+
+        // River labels: italic, along course
+        map.addLayer({
+            id: 'rivers-label',
+            type: 'symbol',
+            source: 'rivers',
+            filter: ['all',
+                ['==', ['get', 'featurecla'], 'River'],
+                ['has', 'name']
+            ],
+            layout: {
+                'symbol-placement': 'line',
+                'text-field': ['get', 'name'],
+                'text-font': ['Noto Sans Italic'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    3, ['match', ['get', 'scalerank'], 1, 10, 2, 9, 8],
+                    8, ['match', ['get', 'scalerank'], 1, 14, 2, 12, 11],
+                    12, 15
+                ],
+                'text-letter-spacing': 0.05,
+                'symbol-spacing': 400,
+                'text-max-angle': 25,
+                'text-rotation-alignment': 'map',
+                'text-pitch-alignment': 'viewport'
+            },
+            paint: {
+                'text-color': '#2a6e96',
+                'text-halo-color': 'rgba(255, 255, 255, 0.85)',
+                'text-halo-width': 1.5
+            }
+        });
+
         // =========================================================
         // LAYER CONTROLS
         // =========================================================
@@ -664,6 +775,26 @@
         setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
         setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
+        // Rivers: toggle controls both line + label layers, opacity controls line
+        (function() {
+            var toggle = document.getElementById('rivers-toggle');
+            var slider = document.getElementById('rivers-opacity');
+            var valueDisplay = document.getElementById('rivers-opacity-val');
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                map.setLayoutProperty('rivers-line', 'visibility', vis);
+                map.setLayoutProperty('rivers-label', 'visibility', vis);
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('rivers-line', 'line-opacity', opacity);
+                map.setPaintProperty('rivers-label', 'text-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+
         setupLayerControl('geol-es-layer', 'geol-es-toggle', 'geol-es-opacity', 'geol-es-opacity-val');
         setupLayerControl('geol-fr-layer', 'geol-fr-toggle', 'geol-fr-opacity', 'geol-fr-opacity-val');
         setupLayerControl('geol-uk-layer', 'geol-uk-toggle', 'geol-uk-opacity', 'geol-uk-opacity-val');

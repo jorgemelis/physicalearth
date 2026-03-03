@@ -4,7 +4,7 @@
 
 Google Maps tells you where the nearest pizza place is. PhysicalEarth tells you *why the world looks the way it does*.
 
-PhysicalEarth is an open-source interactive map viewer that combines hypsometric relief (elevation-based coloring), shaded terrain, and OpenStreetMap detail — the kind of physical geography map you remember from a good school atlas, but zoomable, layered, and alive.
+PhysicalEarth is an open-source interactive map viewer that combines hypsometric relief (elevation-based coloring), shaded terrain, ocean bathymetry, geological overlays, and OpenStreetMap detail — the kind of physical geography map you remember from a good school atlas, but zoomable, layered, and alive.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
@@ -19,50 +19,66 @@ That map doesn't exist online. The data to build it is freely available. The ren
 
 ## What it does
 
-- **Hypsometric relief**: Elevation-based colors from green lowlands to white peaks — see terrain at a glance
-- **OpenStreetMap overlay**: Toggle OSM labels and detail on top of the relief with adjustable transparency
-- **Bathymetry**: Ocean depth visualization (planned)
-- **Geological layers**: Optional overlays from geological surveys like IGME (planned)
-- **Layer controls**: Adjust transparency of each layer independently
+- **Hypsometric relief**: GPU-rendered elevation-based colors from green lowlands to white peaks, using an 18-point color ramp inspired by classic atlas aesthetics
+- **Hillshade**: 3D terrain shading with northwest illumination for natural depth perception
+- **Bathymetry**: Ocean depth visualization from EMODnet — see continental shelves, mid-ocean ridges, and deep trenches
+- **OpenStreetMap overlay**: Toggle labels, roads, borders, and detail with adjustable transparency
+- **Geological layers**: Overlays from national geological surveys:
+  - Spain (IGME, 1:1M)
+  - France (BRGM, 1:1M)
+  - United Kingdom (BGS, 625K Bedrock)
+  - Canada (NRCan, compilation)
+- **Layer controls**: Adjust transparency of each layer independently via a collapsible panel
 
 ## Quick start
 
 Just open `index.html` in your browser. No build step, no dependencies to install, no server required.
 
-## Data sources and attribution
+Or visit the live version at [GitHub Pages](https://jorgemelis.github.io/physicalearth/).
 
-PhysicalEarth combines open data from multiple sources:
+## Technology
+
+- **MapLibre GL JS 5.19** — GPU-accelerated map rendering with `color-relief` layer support
+- **Zero dependencies** — single HTML file, no npm, no build tools, no frameworks
+- All external libraries loaded from CDN
+
+## Data sources and attribution
 
 | Source | Data | License |
 |--------|------|---------|
-| [OpenStreetMap](https://www.openstreetmap.org/) | Vector map data | ODbL |
-| [OpenTopoMap](https://opentopomap.org/) | Topographic tiles | CC-BY-SA |
-| [Natural Earth](https://www.naturalearthdata.com/) | Physical geography vectors | Public domain |
-| [IGME](https://www.igme.es/) | Geological cartography of Spain | Free reuse with attribution |
-
-IGME data attribution: "Origen de los datos: ©CN Instituto Geológico y Minero de España (IGME)"
+| [Mapterhorn](https://mapterhorn.com/) | DEM elevation tiles (Terrarium encoding) | Free |
+| [EMODnet](https://emodnet.ec.europa.eu/) | Bathymetry (ocean depth) | Free with attribution |
+| [OpenStreetMap](https://www.openstreetmap.org/) | Base map tiles | ODbL |
+| [IGME](https://www.igme.es/) | Geological cartography of Spain (1:1M) | Free with attribution |
+| [BRGM](https://www.brgm.fr/) | Geological cartography of France (1:1M) | Free with attribution |
+| [BGS/UKRI](https://www.bgs.ac.uk/) | Bedrock geology of the UK (625K) | Free with attribution |
+| [NRCan](https://natural-resources.canada.ca/) | Geological compilation of Canada | Free with attribution |
+| [Natural Earth](https://www.naturalearthdata.com/) | Rivers (10m) | Public domain |
 
 ## Roadmap
 
-### v0.1 — Current
-- [x] MapLibre GL JS viewer
-- [x] Terrain relief base layer with hillshading
+### Done
+- [x] MapLibre GL JS viewer with GPU-rendered hypsometric tints
+- [x] 18-point color ramp (ocean depths to alpine peaks)
+- [x] Hillshade with adjustable exaggeration
+- [x] EMODnet bathymetry layer
 - [x] OpenStreetMap overlay with opacity control
-- [x] Layer control panel
-- [ ] Basic bathymetry
+- [x] Collapsible layer control panel with per-layer opacity
+- [x] Geological overlays: Spain, France, UK, Canada
+- [x] Responsive design with mobile toggle
+- [x] Live coordinates display
+- [x] Rivers layer with labeled, importance-scaled rendering (Natural Earth 10m)
+- [x] GitHub Pages deployment
 
-### v0.2 — Planned
-- [ ] Geological overlay layer (IGME WMS for Spain)
-- [ ] Improved hypsometric color ramp (cross-blended tints)
-- [ ] River prominence scaling
-- [ ] Mountain range labels
-
-### v0.3 — Future
-- [ ] Additional geological surveys (BGS, BRGM, OneGeology)
+### Planned
+- [ ] Geological legends (WMS GetLegendGraphic)
+- [ ] Additional geological surveys (Germany, Italy, USGS, OneGeology)
 - [ ] Tectonic plate boundaries
+- [ ] Mountain range / peak labels (optional atlas overlay)
 - [ ] Climate zones layer
-- [ ] Historical map overlays
 - [ ] Custom label styling (atlas-quality typography)
+- [ ] Historical map overlays
+- [ ] Fix IGME CORS issue (Spain geology)
 
 ## Contributing
 
@@ -73,7 +89,7 @@ Whether you're a cartographer, a GIS developer, a designer, or just someone who 
 **Particularly wanted:**
 - Cartographic designers who can improve the hypsometric color ramp
 - GIS developers familiar with MapLibre styling
-- Anyone who can help integrate WMS services from national geological surveys
+- Anyone who can help integrate WMS services from additional national geological surveys
 - Feedback on what layers and features would be most useful
 
 ## Philosophy
