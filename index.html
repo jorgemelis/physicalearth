@@ -36,7 +36,7 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             border-radius: 12px;
-            padding: 20px;
+            padding: 14px 18px;
             width: 280px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.15);
             z-index: 10;
@@ -52,34 +52,59 @@
             font-size: 16px;
             font-weight: 700;
             color: #1a1a2e;
-            margin-bottom: 4px;
+            margin-bottom: 0;
             letter-spacing: -0.3px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #controls h2 .panel-arrow {
+            font-size: 12px;
+            color: #aaa;
+            transition: transform 0.25s;
+        }
+
+        #controls h2 .panel-arrow.open {
+            transform: rotate(90deg);
         }
 
         #controls .subtitle {
             font-size: 11px;
             color: #888;
-            margin-bottom: 16px;
+            margin-bottom: 0;
             font-style: italic;
+            cursor: pointer;
+        }
+
+        #layers-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        #layers-list.open {
+            max-height: 500px;
+            margin-top: 12px;
         }
 
         .layer-group {
-            margin-bottom: 14px;
-            padding-bottom: 14px;
+            margin-bottom: 2px;
             border-bottom: 1px solid #eee;
         }
 
         .layer-group:last-child {
             border-bottom: none;
             margin-bottom: 0;
-            padding-bottom: 0;
         }
 
         .layer-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            padding: 6px 0;
         }
 
         .layer-header label {
@@ -97,6 +122,32 @@
             height: 16px;
             accent-color: #2d6a4f;
             cursor: pointer;
+        }
+
+        .layer-header .expand-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            color: #aaa;
+            padding: 2px 4px;
+            transition: transform 0.2s;
+        }
+
+        .layer-header .expand-btn.open {
+            transform: rotate(90deg);
+        }
+
+        .layer-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, padding 0.25s ease;
+            padding: 0;
+        }
+
+        .layer-body.open {
+            max-height: 100px;
+            padding: 4px 0 8px;
         }
 
         .opacity-value {
@@ -237,72 +288,90 @@
 
 <!-- Control Panel -->
 <div id="controls">
-    <h2>PhysicalEarth</h2>
-    <p class="subtitle">The atlas the internet is missing</p>
+    <h2 id="panel-title">PhysicalEarth <span class="panel-arrow">&#9654;</span></h2>
+    <p class="subtitle" id="panel-subtitle">The atlas the internet is missing</p>
 
+    <div id="layers-list">
     <!-- Hypsometric Tints -->
     <div class="layer-group">
         <div class="layer-header">
-            <label>
-                <input type="checkbox" id="hypso-toggle" checked>
-                Hypsometric Tints
-            </label>
+            <label><input type="checkbox" id="hypso-toggle" checked> Hypsometric Tints</label>
+            <button class="expand-btn">&#9654;</button>
         </div>
-        <div class="slider-row">
-            <span class="slider-label">Opacity</span>
-            <input type="range" id="hypso-opacity" min="0" max="100" value="100">
-            <span class="opacity-value" id="hypso-opacity-val">100%</span>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="hypso-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="hypso-opacity-val">100%</span>
+            </div>
+            <p class="layer-description">Elevation-based atlas coloring from DEM data</p>
         </div>
-        <p class="layer-description">Elevation-based atlas coloring from DEM data</p>
+    </div>
+
+    <!-- Bathymetry -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="bathy-toggle" checked> Bathymetry</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="bathy-opacity" min="0" max="100" value="60">
+                <span class="opacity-value" id="bathy-opacity-val">60%</span>
+            </div>
+            <p class="layer-description">Ocean depth. Data: <a href="https://emodnet.ec.europa.eu" style="color:#2d6a4f">EMODnet</a></p>
+        </div>
     </div>
 
     <!-- Hillshade -->
     <div class="layer-group">
         <div class="layer-header">
-            <label>
-                <input type="checkbox" id="hillshade-toggle" checked>
-                Hillshade
-            </label>
+            <label><input type="checkbox" id="hillshade-toggle" checked> Hillshade</label>
+            <button class="expand-btn">&#9654;</button>
         </div>
-        <div class="slider-row">
-            <span class="slider-label">Opacity</span>
-            <input type="range" id="hillshade-opacity" min="0" max="100" value="35">
-            <span class="opacity-value" id="hillshade-opacity-val">35%</span>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="hillshade-opacity" min="0" max="100" value="35">
+                <span class="opacity-value" id="hillshade-opacity-val">35%</span>
+            </div>
+            <p class="layer-description">3D terrain shading (illumination NW)</p>
         </div>
-        <p class="layer-description">3D terrain shading (illumination NW)</p>
     </div>
 
     <!-- OSM Overlay -->
     <div class="layer-group">
         <div class="layer-header">
-            <label>
-                <input type="checkbox" id="osm-toggle" checked>
-                OpenStreetMap
-            </label>
+            <label><input type="checkbox" id="osm-toggle" checked> OpenStreetMap</label>
+            <button class="expand-btn">&#9654;</button>
         </div>
-        <div class="slider-row">
-            <span class="slider-label">Opacity</span>
-            <input type="range" id="osm-opacity" min="0" max="100" value="40">
-            <span class="opacity-value" id="osm-opacity-val">40%</span>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="osm-opacity" min="0" max="100" value="40">
+                <span class="opacity-value" id="osm-opacity-val">40%</span>
+            </div>
+            <p class="layer-description">Labels, roads, borders, and geographic detail</p>
         </div>
-        <p class="layer-description">Labels, roads, borders, and geographic detail</p>
     </div>
 
     <!-- IGME Geological Layer -->
     <div class="layer-group">
         <div class="layer-header">
-            <label>
-                <input type="checkbox" id="geology-toggle">
-                Geology (IGME)
-            </label>
+            <label><input type="checkbox" id="geology-toggle"> Geology (IGME)</label>
+            <button class="expand-btn">&#9654;</button>
         </div>
-        <div class="slider-row">
-            <span class="slider-label">Opacity</span>
-            <input type="range" id="geology-opacity" min="0" max="100" value="50">
-            <span class="opacity-value" id="geology-opacity-val">50%</span>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="geology-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="geology-opacity-val">50%</span>
+            </div>
+            <p class="layer-description">Geological map of Spain 1:1M. Data: &#169;CN IGME</p>
         </div>
-        <p class="layer-description">Geological map of Spain 1:1M. Data: &#169;CN IGME</p>
     </div>
+    </div><!-- /layers-list -->
 </div>
 
 <!-- Toggle button for collapsed state -->
@@ -337,6 +406,12 @@
             url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxzoom: 19
+        },
+        // EMODnet Bathymetry (pre-rendered ocean depth)
+        bathymetry: {
+            url: 'https://tiles.emodnet-bathymetry.eu/2020/baselayer/web_mercator/{z}/{x}/{y}.png',
+            attribution: 'Bathymetry: <a href="https://emodnet.ec.europa.eu">EMODnet</a>',
+            maxzoom: 12
         },
         // IGME Geological Map of Spain 1:1M (WMS)
         igme: {
@@ -413,6 +488,24 @@
             source: 'terrain-dem',
             paint: {
                 'color-relief-color': HYPSO_COLOR_RAMP
+            }
+        });
+
+        // --- BATHYMETRY LAYER (between hypso and hillshade) ---
+        map.addSource('bathy-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.bathymetry.url],
+            tileSize: 256,
+            maxzoom: SOURCES.bathymetry.maxzoom,
+            attribution: SOURCES.bathymetry.attribution
+        });
+
+        map.addLayer({
+            id: 'bathy-layer',
+            type: 'raster',
+            source: 'bathy-tiles',
+            paint: {
+                'raster-opacity': 0.6
             }
         });
 
@@ -500,6 +593,7 @@
         }
 
         setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
+        setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
         setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
         setupLayerControl('geology-layer', 'geology-toggle', 'geology-opacity', 'geology-opacity-val');
@@ -525,16 +619,36 @@
 
     var controlPanel = document.getElementById('controls');
     var toggleBtn = document.getElementById('toggle-controls');
+    var layersList = document.getElementById('layers-list');
+    var panelArrow = document.querySelector('.panel-arrow');
 
     toggleBtn.addEventListener('click', function() {
         controlPanel.classList.remove('collapsed');
         toggleBtn.classList.remove('visible');
     });
 
-    // Double-click panel title to collapse
-    controlPanel.querySelector('h2').addEventListener('dblclick', function() {
-        controlPanel.classList.add('collapsed');
-        toggleBtn.classList.add('visible');
+    // Click title or subtitle to toggle layers list
+    function toggleLayersList() {
+        layersList.classList.toggle('open');
+        panelArrow.classList.toggle('open');
+    }
+    document.getElementById('panel-title').addEventListener('click', toggleLayersList);
+    document.getElementById('panel-subtitle').addEventListener('click', toggleLayersList);
+
+    // Accordion expand/collapse
+    document.querySelectorAll('.expand-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var body = this.closest('.layer-group').querySelector('.layer-body');
+            var isOpen = body.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.layer-body').forEach(function(b) { b.classList.remove('open'); });
+            document.querySelectorAll('.expand-btn').forEach(function(b) { b.classList.remove('open'); });
+            // Toggle clicked
+            if (!isOpen) {
+                body.classList.add('open');
+                this.classList.add('open');
+            }
+        });
     });
 
 })();
