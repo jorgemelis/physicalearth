@@ -86,8 +86,9 @@
         }
 
         #layers-list.open {
-            max-height: 500px;
+            max-height: 800px;
             margin-top: 12px;
+            overflow-y: auto;
         }
 
         .layer-group {
@@ -356,19 +357,67 @@
         </div>
     </div>
 
-    <!-- IGME Geological Layer -->
+    <!-- Geology: Spain -->
     <div class="layer-group">
         <div class="layer-header">
-            <label><input type="checkbox" id="geology-toggle"> Geology (IGME)</label>
+            <label><input type="checkbox" id="geol-es-toggle"> Geology: Spain</label>
             <button class="expand-btn">&#9654;</button>
         </div>
         <div class="layer-body">
             <div class="slider-row">
                 <span class="slider-label">Opacity</span>
-                <input type="range" id="geology-opacity" min="0" max="100" value="50">
-                <span class="opacity-value" id="geology-opacity-val">50%</span>
+                <input type="range" id="geol-es-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="geol-es-opacity-val">50%</span>
             </div>
-            <p class="layer-description">Geological map of Spain 1:1M. Data: &#169;CN IGME</p>
+            <p class="layer-description">1:1M. &#169;CN <a href="https://www.igme.es" style="color:#2d6a4f">IGME</a> (CORS issue — may not load)</p>
+        </div>
+    </div>
+
+    <!-- Geology: France -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="geol-fr-toggle"> Geology: France</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="geol-fr-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="geol-fr-opacity-val">50%</span>
+            </div>
+            <p class="layer-description">1:1M. &#169; <a href="https://www.brgm.fr" style="color:#2d6a4f">BRGM</a></p>
+        </div>
+    </div>
+
+    <!-- Geology: UK -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="geol-uk-toggle"> Geology: UK</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="geol-uk-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="geol-uk-opacity-val">50%</span>
+            </div>
+            <p class="layer-description">625K Bedrock. &#169; <a href="https://www.bgs.ac.uk" style="color:#2d6a4f">BGS</a>/UKRI</p>
+        </div>
+    </div>
+
+    <!-- Geology: Canada -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="geol-ca-toggle"> Geology: Canada</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="geol-ca-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="geol-ca-opacity-val">50%</span>
+            </div>
+            <p class="layer-description">Compilation. &#169; <a href="https://natural-resources.canada.ca" style="color:#2d6a4f">NRCan</a></p>
         </div>
     </div>
     </div><!-- /layers-list -->
@@ -413,11 +462,26 @@
             attribution: 'Bathymetry: <a href="https://emodnet.ec.europa.eu">EMODnet</a>',
             maxzoom: 12
         },
-        // IGME Geological Map of Spain 1:1M (WMS)
-        igme: {
+        // Geological surveys (WMS)
+        geol_es: {
             url: 'https://mapas.igme.es/gis/services/Cartografia_Geologica/IGME_Geologico_1M/MapServer/WMSServer',
             layers: '0,1,2,3',
-            attribution: 'Geological data: &copy;CN <a href="https://www.igme.es">IGME</a>'
+            attribution: '&copy;CN <a href="https://www.igme.es">IGME</a>'
+        },
+        geol_fr: {
+            url: 'https://geoservices.brgm.fr/geologie',
+            layers: 'GEOLOGIE',
+            attribution: '&copy; <a href="https://www.brgm.fr">BRGM</a>'
+        },
+        geol_uk: {
+            url: 'https://ogc.bgs.ac.uk/cgi-bin/BGS_Bedrock_and_Superficial_Geology/ows',
+            layers: 'GBR_BGS_625k_BLT',
+            attribution: '&copy; <a href="https://www.bgs.ac.uk">BGS</a>/UKRI'
+        },
+        geol_ca: {
+            url: 'https://maps-cartes.services.geo.ca/server_serveur/services/NRCan/cdn_geol_compil_en/MapServer/WMSServer',
+            layers: '0',
+            attribution: '&copy; <a href="https://natural-resources.canada.ca">NRCan</a>'
         }
     };
 
@@ -541,34 +605,38 @@
             }
         });
 
-        // --- IGME GEOLOGICAL LAYER (WMS) ---
-        map.addSource('igme-wms', {
-            type: 'raster',
-            tiles: [
-                SOURCES.igme.url +
-                '?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap' +
-                '&LAYERS=' + SOURCES.igme.layers +
-                '&CRS=EPSG:3857' +
-                '&BBOX={bbox-epsg-3857}' +
-                '&WIDTH=256&HEIGHT=256' +
-                '&FORMAT=image/png' +
-                '&TRANSPARENT=true'
-            ],
-            tileSize: 256,
-            attribution: SOURCES.igme.attribution
-        });
+        // --- GEOLOGICAL LAYERS (WMS) ---
+        function addGeologyWMS(id, src) {
+            map.addSource(id + '-wms', {
+                type: 'raster',
+                tiles: [
+                    src.url +
+                    '?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap' +
+                    '&LAYERS=' + src.layers +
+                    '&SRS=EPSG:3857' +
+                    '&BBOX={bbox-epsg-3857}' +
+                    '&WIDTH=256&HEIGHT=256' +
+                    '&FORMAT=image/png' +
+                    '&TRANSPARENT=true' +
+                    '&STYLES='
+                ],
+                tileSize: 256,
+                attribution: src.attribution
+            });
 
-        map.addLayer({
-            id: 'geology-layer',
-            type: 'raster',
-            source: 'igme-wms',
-            paint: {
-                'raster-opacity': 0.5
-            },
-            layout: {
-                'visibility': 'none'
-            }
-        });
+            map.addLayer({
+                id: id + '-layer',
+                type: 'raster',
+                source: id + '-wms',
+                paint: { 'raster-opacity': 0.5 },
+                layout: { 'visibility': 'none' }
+            });
+        }
+
+        addGeologyWMS('geol-es', SOURCES.geol_es);
+        addGeologyWMS('geol-fr', SOURCES.geol_fr);
+        addGeologyWMS('geol-uk', SOURCES.geol_uk);
+        addGeologyWMS('geol-ca', SOURCES.geol_ca);
 
         // =========================================================
         // LAYER CONTROLS
@@ -596,7 +664,10 @@
         setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
         setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
-        setupLayerControl('geology-layer', 'geology-toggle', 'geology-opacity', 'geology-opacity-val');
+        setupLayerControl('geol-es-layer', 'geol-es-toggle', 'geol-es-opacity', 'geol-es-opacity-val');
+        setupLayerControl('geol-fr-layer', 'geol-fr-toggle', 'geol-fr-opacity', 'geol-fr-opacity-val');
+        setupLayerControl('geol-uk-layer', 'geol-uk-toggle', 'geol-uk-opacity', 'geol-uk-opacity-val');
+        setupLayerControl('geol-ca-layer', 'geol-ca-toggle', 'geol-ca-opacity', 'geol-ca-opacity-val');
     });
 
     // =========================================================
@@ -635,19 +706,12 @@
     document.getElementById('panel-title').addEventListener('click', toggleLayersList);
     document.getElementById('panel-subtitle').addEventListener('click', toggleLayersList);
 
-    // Accordion expand/collapse
+    // Accordion expand/collapse (multiple can be open)
     document.querySelectorAll('.expand-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var body = this.closest('.layer-group').querySelector('.layer-body');
-            var isOpen = body.classList.contains('open');
-            // Close all
-            document.querySelectorAll('.layer-body').forEach(function(b) { b.classList.remove('open'); });
-            document.querySelectorAll('.expand-btn').forEach(function(b) { b.classList.remove('open'); });
-            // Toggle clicked
-            if (!isOpen) {
-                body.classList.add('open');
-                this.classList.add('open');
-            }
+            body.classList.toggle('open');
+            this.classList.toggle('open');
         });
     });
 
