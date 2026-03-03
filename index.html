@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhysicalEarth — Interactive Physical Atlas</title>
+    <meta name="description" content="An open-source interactive physical map with hypsometric relief, hillshading, and OpenStreetMap overlay. The atlas the internet is missing.">
+    
+    <!-- MapLibre GL JS -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden;
+            background: #1a1a2e;
+        }
+        
+        #map {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* Control Panel */
+        #controls {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            z-index: 10;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+        
+        #controls.collapsed {
+            transform: translateX(calc(100% + 16px));
+        }
+        
+        #controls h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+        
+        #controls .subtitle {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        
+        .layer-group {
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .layer-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .layer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .layer-header label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .layer-header label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #2d6a4f;
+            cursor: pointer;
+        }
+        
+        .opacity-value {
+            font-size: 11px;
+            color: #999;
+            font-variant-numeric: tabular-nums;
+            min-width: 32px;
+            text-align: right;
+        }
+        
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .slider-label {
+            font-size: 11px;
+            color: #777;
+            min-width: 52px;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #ddd;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2d6a4f;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2d6a4f;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        
+        .layer-description {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        
+        /* Toggle button */
+        #toggle-controls {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 11;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #333;
+            transition: opacity 0.3s;
+        }
+        
+        #toggle-controls.visible {
+            display: flex;
+        }
+        
+        /* Info badge */
+        #info-badge {
+            position: absolute;
+            bottom: 32px;
+            left: 16px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(8px);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #555;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        #info-badge a {
+            color: #2d6a4f;
+            text-decoration: none;
+        }
+        
+        #info-badge a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Coordinates display */
+        #coordinates {
+            position: absolute;
+            bottom: 32px;
+            right: 16px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #666;
+            z-index: 10;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+        
+        /* MapLibre overrides */
+        .maplibregl-ctrl-attrib {
+            font-size: 10px !important;
+            background: rgba(255,255,255,0.7) !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Control Panel -->
+<div id="controls">
+    <h2>PhysicalEarth</h2>
+    <p class="subtitle">The atlas the internet is missing</p>
+    
+    <!-- Relief Layer -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label>
+                <input type="checkbox" id="relief-toggle" checked>
+                Terrain Relief
+            </label>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="relief-opacity" min="0" max="100" value="100">
+            <span class="opacity-value" id="relief-opacity-val">100%</span>
+        </div>
+        <p class="layer-description">Hypsometric colors + hillshading from elevation data</p>
+    </div>
+    
+    <!-- OSM Overlay -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label>
+                <input type="checkbox" id="osm-toggle" checked>
+                OpenStreetMap
+            </label>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="osm-opacity" min="0" max="100" value="45">
+            <span class="opacity-value" id="osm-opacity-val">45%</span>
+        </div>
+        <p class="layer-description">Labels, roads, borders, and geographic detail</p>
+    </div>
+    
+    <!-- IGME Geological Layer -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label>
+                <input type="checkbox" id="geology-toggle">
+                Geology (IGME)
+            </label>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="geology-opacity" min="0" max="100" value="50">
+            <span class="opacity-value" id="geology-opacity-val">50%</span>
+        </div>
+        <p class="layer-description">Geological map of Spain 1:1M. Data: &#169;CN IGME</p>
+    </div>
+</div>
+
+<!-- Toggle button for collapsed state -->
+<button id="toggle-controls" title="Show layer controls">&#9776;</button>
+
+<!-- Project info -->
+<div id="info-badge">
+    <a href="https://github.com/physicalearth/physicalearth" target="_blank">PhysicalEarth</a> &mdash; open source physical atlas
+</div>
+
+<!-- Coordinates -->
+<div id="coordinates">
+    <span id="coord-text">Move mouse over map</span>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // =========================================================
+    // CONFIGURATION
+    // =========================================================
+    
+    // Tile sources — easy to swap or extend
+    const SOURCES = {
+        // Relief tiles with hypsometric coloring
+        relief: {
+            // Using maps-for-free.com relief tiles (SRTM-based hypsometric)
+            url: 'https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg',
+            attribution: '<a href="https://maps-for-free.com">maps-for-free.com</a> | SRTM',
+            maxzoom: 11
+        },
+        // OpenStreetMap standard tiles for labels and detail
+        osm: {
+            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxzoom: 19
+        },
+        // IGME Geological Map of Spain 1:1M (WMS)
+        igme: {
+            url: 'https://mapas.igme.es/gis/services/Cartografia_Geologica/IGME_Geologico_1M/MapServer/WMSServer',
+            layers: '0,1,2,3',
+            attribution: 'Geological data: &copy;CN <a href="https://www.igme.es">IGME</a>'
+        }
+    };
+
+    // Default view: centered on Europe/Asia
+    const DEFAULT_CENTER = [20, 35];
+    const DEFAULT_ZOOM = 3;
+
+    // =========================================================
+    // MAP INITIALIZATION
+    // =========================================================
+
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: {
+            version: 8,
+            sources: {},
+            layers: []
+        },
+        center: DEFAULT_CENTER,
+        zoom: DEFAULT_ZOOM,
+        minZoom: 1,
+        maxZoom: 18,
+        attributionControl: true
+    });
+
+    // Add navigation controls
+    map.addControl(new maplibregl.NavigationControl(), 'top-left');
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+    map.on('load', function() {
+        
+        // --- RELIEF BASE LAYER ---
+        map.addSource('relief-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.relief.url],
+            tileSize: 256,
+            maxzoom: SOURCES.relief.maxzoom,
+            attribution: SOURCES.relief.attribution
+        });
+        
+        map.addLayer({
+            id: 'relief-layer',
+            type: 'raster',
+            source: 'relief-tiles',
+            paint: {
+                'raster-opacity': 1.0
+            }
+        });
+
+        // --- OSM OVERLAY ---
+        map.addSource('osm-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.osm.url],
+            tileSize: 256,
+            maxzoom: SOURCES.osm.maxzoom,
+            attribution: SOURCES.osm.attribution
+        });
+        
+        map.addLayer({
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            paint: {
+                'raster-opacity': 0.45
+            }
+        });
+
+        // --- IGME GEOLOGICAL LAYER (WMS) ---
+        map.addSource('igme-wms', {
+            type: 'raster',
+            tiles: [
+                SOURCES.igme.url + 
+                '?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap' +
+                '&LAYERS=' + SOURCES.igme.layers +
+                '&CRS=EPSG:3857' +
+                '&BBOX={bbox-epsg-3857}' +
+                '&WIDTH=256&HEIGHT=256' +
+                '&FORMAT=image/png' +
+                '&TRANSPARENT=true'
+            ],
+            tileSize: 256,
+            attribution: SOURCES.igme.attribution
+        });
+        
+        map.addLayer({
+            id: 'geology-layer',
+            type: 'raster',
+            source: 'igme-wms',
+            paint: {
+                'raster-opacity': 0.5
+            },
+            layout: {
+                'visibility': 'none'
+            }
+        });
+
+        // =========================================================
+        // LAYER CONTROLS
+        // =========================================================
+
+        function setupLayerControl(layerId, toggleId, sliderId, valueId) {
+            var toggle = document.getElementById(toggleId);
+            var slider = document.getElementById(sliderId);
+            var valueDisplay = document.getElementById(valueId);
+            
+            toggle.addEventListener('change', function() {
+                map.setLayoutProperty(layerId, 'visibility', 
+                    this.checked ? 'visible' : 'none');
+            });
+            
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty(layerId, 'raster-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        }
+
+        setupLayerControl('relief-layer', 'relief-toggle', 'relief-opacity', 'relief-opacity-val');
+        setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
+        setupLayerControl('geology-layer', 'geology-toggle', 'geology-opacity', 'geology-opacity-val');
+    });
+
+    // =========================================================
+    // COORDINATES DISPLAY
+    // =========================================================
+
+    map.on('mousemove', function(e) {
+        var lat = e.lngLat.lat.toFixed(4);
+        var lng = e.lngLat.lng.toFixed(4);
+        var ns = e.lngLat.lat >= 0 ? 'N' : 'S';
+        var ew = e.lngLat.lng >= 0 ? 'E' : 'W';
+        document.getElementById('coord-text').textContent = 
+            Math.abs(lat) + '\u00B0' + ns + '  ' + Math.abs(lng) + '\u00B0' + ew + 
+            '  z' + map.getZoom().toFixed(1);
+    });
+
+    // =========================================================
+    // PANEL TOGGLE (for mobile / small screens)
+    // =========================================================
+
+    var controlPanel = document.getElementById('controls');
+    var toggleBtn = document.getElementById('toggle-controls');
+    
+    toggleBtn.addEventListener('click', function() {
+        controlPanel.classList.remove('collapsed');
+        toggleBtn.classList.remove('visible');
+    });
+
+    // Double-click panel title to collapse
+    controlPanel.querySelector('h2').addEventListener('dblclick', function() {
+        controlPanel.classList.add('collapsed');
+        toggleBtn.classList.add('visible');
+    });
+
+})();
+</script>
+
+</body>
+</html>
