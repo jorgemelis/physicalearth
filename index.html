@@ -5,29 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PhysicalEarth — Interactive Physical Atlas</title>
     <meta name="description" content="An open-source interactive physical map with hypsometric relief, hillshading, and OpenStreetMap overlay. The atlas the internet is missing.">
-    
-    <!-- MapLibre GL JS -->
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    
+
+    <!-- MapLibre GL JS 5.19 (supports color-relief layer) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.19.0/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@5.19.0/dist/maplibre-gl.js"></script>
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
             background: #1a1a2e;
         }
-        
+
         #map {
             width: 100vw;
             height: 100vh;
         }
-        
+
         /* Control Panel */
         #controls {
             position: absolute;
@@ -43,11 +43,11 @@
             font-size: 14px;
             transition: transform 0.3s ease;
         }
-        
+
         #controls.collapsed {
             transform: translateX(calc(100% + 16px));
         }
-        
+
         #controls h2 {
             font-size: 16px;
             font-weight: 700;
@@ -55,33 +55,33 @@
             margin-bottom: 4px;
             letter-spacing: -0.3px;
         }
-        
+
         #controls .subtitle {
             font-size: 11px;
             color: #888;
             margin-bottom: 16px;
             font-style: italic;
         }
-        
+
         .layer-group {
             margin-bottom: 14px;
             padding-bottom: 14px;
             border-bottom: 1px solid #eee;
         }
-        
+
         .layer-group:last-child {
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
         }
-        
+
         .layer-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 8px;
         }
-        
+
         .layer-header label {
             display: flex;
             align-items: center;
@@ -91,14 +91,14 @@
             cursor: pointer;
             user-select: none;
         }
-        
+
         .layer-header label input[type="checkbox"] {
             width: 16px;
             height: 16px;
             accent-color: #2d6a4f;
             cursor: pointer;
         }
-        
+
         .opacity-value {
             font-size: 11px;
             color: #999;
@@ -106,19 +106,19 @@
             min-width: 32px;
             text-align: right;
         }
-        
+
         .slider-row {
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        
+
         .slider-label {
             font-size: 11px;
             color: #777;
             min-width: 52px;
         }
-        
+
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -129,7 +129,7 @@
             outline: none;
             cursor: pointer;
         }
-        
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -140,7 +140,7 @@
             cursor: pointer;
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
         }
-        
+
         input[type="range"]::-moz-range-thumb {
             width: 16px;
             height: 16px;
@@ -150,14 +150,14 @@
             border: none;
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
         }
-        
+
         .layer-description {
             font-size: 11px;
             color: #999;
             margin-top: 4px;
             line-height: 1.4;
         }
-        
+
         /* Toggle button */
         #toggle-controls {
             position: absolute;
@@ -179,11 +179,11 @@
             color: #333;
             transition: opacity 0.3s;
         }
-        
+
         #toggle-controls.visible {
             display: flex;
         }
-        
+
         /* Info badge */
         #info-badge {
             position: absolute;
@@ -198,16 +198,16 @@
             z-index: 10;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        
+
         #info-badge a {
             color: #2d6a4f;
             text-decoration: none;
         }
-        
+
         #info-badge a:hover {
             text-decoration: underline;
         }
-        
+
         /* Coordinates display */
         #coordinates {
             position: absolute;
@@ -223,7 +223,7 @@
             font-variant-numeric: tabular-nums;
             font-family: 'SF Mono', 'Fira Code', monospace;
         }
-        
+
         /* MapLibre overrides */
         .maplibregl-ctrl-attrib {
             font-size: 10px !important;
@@ -239,23 +239,39 @@
 <div id="controls">
     <h2>PhysicalEarth</h2>
     <p class="subtitle">The atlas the internet is missing</p>
-    
-    <!-- Relief Layer -->
+
+    <!-- Hypsometric Tints -->
     <div class="layer-group">
         <div class="layer-header">
             <label>
-                <input type="checkbox" id="relief-toggle" checked>
-                Terrain Relief
+                <input type="checkbox" id="hypso-toggle" checked>
+                Hypsometric Tints
             </label>
         </div>
         <div class="slider-row">
             <span class="slider-label">Opacity</span>
-            <input type="range" id="relief-opacity" min="0" max="100" value="100">
-            <span class="opacity-value" id="relief-opacity-val">100%</span>
+            <input type="range" id="hypso-opacity" min="0" max="100" value="100">
+            <span class="opacity-value" id="hypso-opacity-val">100%</span>
         </div>
-        <p class="layer-description">Hypsometric colors + hillshading from elevation data</p>
+        <p class="layer-description">Elevation-based atlas coloring from DEM data</p>
     </div>
-    
+
+    <!-- Hillshade -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label>
+                <input type="checkbox" id="hillshade-toggle" checked>
+                Hillshade
+            </label>
+        </div>
+        <div class="slider-row">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="hillshade-opacity" min="0" max="100" value="35">
+            <span class="opacity-value" id="hillshade-opacity-val">35%</span>
+        </div>
+        <p class="layer-description">3D terrain shading (illumination NW)</p>
+    </div>
+
     <!-- OSM Overlay -->
     <div class="layer-group">
         <div class="layer-header">
@@ -266,12 +282,12 @@
         </div>
         <div class="slider-row">
             <span class="slider-label">Opacity</span>
-            <input type="range" id="osm-opacity" min="0" max="100" value="45">
-            <span class="opacity-value" id="osm-opacity-val">45%</span>
+            <input type="range" id="osm-opacity" min="0" max="100" value="40">
+            <span class="opacity-value" id="osm-opacity-val">40%</span>
         </div>
         <p class="layer-description">Labels, roads, borders, and geographic detail</p>
     </div>
-    
+
     <!-- IGME Geological Layer -->
     <div class="layer-group">
         <div class="layer-header">
@@ -309,15 +325,12 @@
     // =========================================================
     // CONFIGURATION
     // =========================================================
-    
-    // Tile sources — easy to swap or extend
+
     const SOURCES = {
-        // Relief tiles with hypsometric coloring
-        relief: {
-            // Using maps-for-free.com relief tiles (SRTM-based hypsometric)
-            url: 'https://maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg',
-            attribution: '<a href="https://maps-for-free.com">maps-for-free.com</a> | SRTM',
-            maxzoom: 11
+        // DEM tiles for hypsometric coloring and hillshade
+        dem: {
+            url: 'https://tiles.mapterhorn.com/tilejson.json',
+            attribution: 'Elevation: <a href="https://mapterhorn.com">Mapterhorn</a>'
         },
         // OpenStreetMap standard tiles for labels and detail
         osm: {
@@ -333,15 +346,38 @@
         }
     };
 
-    // Default view: centered on Europe/Asia
-    const DEFAULT_CENTER = [20, 35];
-    const DEFAULT_ZOOM = 3;
+    // Classic physical atlas color ramp (inspired by Natural Earth cross-blended hypsometric tints)
+    var HYPSO_COLOR_RAMP = [
+        'interpolate', ['linear'], ['elevation'],
+        -8000, 'rgb(16, 30, 68)',       // deep ocean: dark navy
+        -6000, 'rgb(22, 53, 99)',       // abyssal: dark blue
+        -4000, 'rgb(34, 82, 130)',      // deep sea: medium blue
+        -2000, 'rgb(57, 117, 160)',     // mid ocean: steel blue
+        -200,  'rgb(107, 174, 197)',    // continental shelf: light blue
+        0,     'rgb(158, 210, 219)',    // sea level: pale blue
+        5,     'rgb(107, 163, 93)',     // coast: rich green
+        100,   'rgb(125, 176, 101)',    // lowlands: green
+        200,   'rgb(155, 194, 113)',    // low plains: yellow-green
+        500,   'rgb(194, 209, 139)',    // foothills: pale green-yellow
+        800,   'rgb(218, 210, 156)',    // mid elevation: sandy
+        1200,  'rgb(211, 190, 142)',    // uplands: tan
+        1800,  'rgb(195, 167, 125)',    // highlands: warm brown
+        2500,  'rgb(178, 148, 115)',    // mountains: brown
+        3500,  'rgb(166, 143, 121)',    // high mountains: gray-brown
+        4500,  'rgb(195, 188, 181)',    // alpine: light gray
+        5500,  'rgb(224, 222, 220)',    // near summit: pale gray
+        7000,  'rgb(248, 248, 248)'    // peaks: near white
+    ];
+
+    // Default view: centered on Europe
+    var DEFAULT_CENTER = [10, 40];
+    var DEFAULT_ZOOM = 4;
 
     // =========================================================
     // MAP INITIALIZATION
     // =========================================================
 
-    const map = new maplibregl.Map({
+    var map = new maplibregl.Map({
         container: 'map',
         style: {
             version: 8,
@@ -351,7 +387,7 @@
         center: DEFAULT_CENTER,
         zoom: DEFAULT_ZOOM,
         minZoom: 1,
-        maxZoom: 18,
+        maxZoom: 17,
         attributionControl: true
     });
 
@@ -360,22 +396,37 @@
     map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
     map.on('load', function() {
-        
-        // --- RELIEF BASE LAYER ---
-        map.addSource('relief-tiles', {
-            type: 'raster',
-            tiles: [SOURCES.relief.url],
-            tileSize: 256,
-            maxzoom: SOURCES.relief.maxzoom,
-            attribution: SOURCES.relief.attribution
+
+        // --- DEM SOURCE (shared by hypsometric + hillshade) ---
+        map.addSource('terrain-dem', {
+            type: 'raster-dem',
+            url: SOURCES.dem.url,
+            encoding: 'terrarium',
+            tileSize: 512,
+            attribution: SOURCES.dem.attribution
         });
-        
+
+        // --- HYPSOMETRIC COLOR LAYER ---
         map.addLayer({
-            id: 'relief-layer',
-            type: 'raster',
-            source: 'relief-tiles',
+            id: 'hypso-layer',
+            type: 'color-relief',
+            source: 'terrain-dem',
             paint: {
-                'raster-opacity': 1.0
+                'color-relief-color': HYPSO_COLOR_RAMP
+            }
+        });
+
+        // --- HILLSHADE LAYER ---
+        map.addLayer({
+            id: 'hillshade-layer',
+            type: 'hillshade',
+            source: 'terrain-dem',
+            paint: {
+                'hillshade-illumination-direction': 315,
+                'hillshade-exaggeration': 0.4,
+                'hillshade-shadow-color': 'rgba(0, 0, 0, 0.35)',
+                'hillshade-highlight-color': 'rgba(255, 255, 255, 0.35)',
+                'hillshade-accent-color': 'rgba(0, 0, 0, 0.1)'
             }
         });
 
@@ -387,13 +438,13 @@
             maxzoom: SOURCES.osm.maxzoom,
             attribution: SOURCES.osm.attribution
         });
-        
+
         map.addLayer({
             id: 'osm-layer',
             type: 'raster',
             source: 'osm-tiles',
             paint: {
-                'raster-opacity': 0.45
+                'raster-opacity': 0.40
             }
         });
 
@@ -401,7 +452,7 @@
         map.addSource('igme-wms', {
             type: 'raster',
             tiles: [
-                SOURCES.igme.url + 
+                SOURCES.igme.url +
                 '?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap' +
                 '&LAYERS=' + SOURCES.igme.layers +
                 '&CRS=EPSG:3857' +
@@ -413,7 +464,7 @@
             tileSize: 256,
             attribution: SOURCES.igme.attribution
         });
-        
+
         map.addLayer({
             id: 'geology-layer',
             type: 'raster',
@@ -430,24 +481,26 @@
         // LAYER CONTROLS
         // =========================================================
 
-        function setupLayerControl(layerId, toggleId, sliderId, valueId) {
+        function setupLayerControl(layerId, toggleId, sliderId, valueId, opacityProp) {
             var toggle = document.getElementById(toggleId);
             var slider = document.getElementById(sliderId);
             var valueDisplay = document.getElementById(valueId);
-            
+            var prop = opacityProp || 'raster-opacity';
+
             toggle.addEventListener('change', function() {
-                map.setLayoutProperty(layerId, 'visibility', 
+                map.setLayoutProperty(layerId, 'visibility',
                     this.checked ? 'visible' : 'none');
             });
-            
+
             slider.addEventListener('input', function() {
                 var opacity = parseInt(this.value) / 100;
-                map.setPaintProperty(layerId, 'raster-opacity', opacity);
+                map.setPaintProperty(layerId, prop, opacity);
                 valueDisplay.textContent = this.value + '%';
             });
         }
 
-        setupLayerControl('relief-layer', 'relief-toggle', 'relief-opacity', 'relief-opacity-val');
+        setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
+        setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
         setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
         setupLayerControl('geology-layer', 'geology-toggle', 'geology-opacity', 'geology-opacity-val');
     });
@@ -461,8 +514,8 @@
         var lng = e.lngLat.lng.toFixed(4);
         var ns = e.lngLat.lat >= 0 ? 'N' : 'S';
         var ew = e.lngLat.lng >= 0 ? 'E' : 'W';
-        document.getElementById('coord-text').textContent = 
-            Math.abs(lat) + '\u00B0' + ns + '  ' + Math.abs(lng) + '\u00B0' + ew + 
+        document.getElementById('coord-text').textContent =
+            Math.abs(lat) + '\u00B0' + ns + '  ' + Math.abs(lng) + '\u00B0' + ew +
             '  z' + map.getZoom().toFixed(1);
     });
 
@@ -472,7 +525,7 @@
 
     var controlPanel = document.getElementById('controls');
     var toggleBtn = document.getElementById('toggle-controls');
-    
+
     toggleBtn.addEventListener('click', function() {
         controlPanel.classList.remove('collapsed');
         toggleBtn.classList.remove('visible');
