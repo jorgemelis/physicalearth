@@ -49,7 +49,6 @@ Everything lives in `index.html` (~800 lines):
 | SPW (Belgium/Wallonia) | geoservices.wallonie.be | WMS |
 | DOV (Belgium/Flanders) | www.dov.vlaanderen.be | WMS |
 | LNEG (Portugal) | sig.lneg.pt | WMS |
-| MEM (Morocco) | cartesgeoscientifiques.mem.gov.ma | XYZ tiles |
 
 ## Development Guidelines
 - Keep the single-file architecture: no build tools, no splitting into modules
@@ -90,7 +89,12 @@ Use Natural Earth GeoJSON datasets:
 - `ne_50m_geography_marine_polys.geojson` — oceans, seas, bays
 Atlas conventions: UPPERCASE brown for mountains, italic blue for water.
 
-### 3. Future Ideas
+### 3. Morocco Geology Layer (BLOCKED)
+- **Source**: XYZ tiles at `cartesgeoscientifiques.mem.gov.ma/data/fgl/{z}/{x}/{y}.png`
+- **Issue**: Server sends duplicate `Access-Control-Allow-Origin: *` header — browsers reject it
+- **Status**: Tiles are valid (verified via curl) but unusable from browser until server is fixed
+
+### 4. Future Ideas
 - Additional geological surveys (Germany, Italy, USGS)
 - Tectonic plate boundaries
 - Climate zones

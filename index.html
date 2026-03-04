@@ -502,15 +502,6 @@
                 </div>
             </div>
 
-            <div class="geol-item">
-                <label><input type="checkbox" id="geol-ma-toggle"> Morocco</label>
-                <span class="layer-description">&#169; <a href="https://cartesgeoscientifiques.mem.gov.ma" style="color:#2d6a4f">MEM Morocco</a></span>
-                <div class="slider-row">
-                    <span class="slider-label">Opacity</span>
-                    <input type="range" id="geol-ma-opacity" min="0" max="100" value="50">
-                    <span class="opacity-value" id="geol-ma-opacity-val">50%</span>
-                </div>
-            </div>
         </div>
     </div>
     </div><!-- /layers-list -->
@@ -591,10 +582,6 @@
             layers: '0,2',
             attribution: '&copy; <a href="https://www.lneg.pt">LNEG</a>'
         },
-        geol_ma: {
-            url: 'https://cartesgeoscientifiques.mem.gov.ma/data/fgl/{z}/{x}/{y}.png',
-            attribution: '&copy; <a href="https://cartesgeoscientifiques.mem.gov.ma">MEM Morocco</a>'
-        }
     };
 
     // Classic physical atlas color ramp (inspired by Natural Earth cross-blended hypsometric tints)
@@ -754,23 +741,6 @@
         addGeologyWMS('geol-be-vl', SOURCES.geol_be_vl);
         addGeologyWMS('geol-pt', SOURCES.geol_pt);
 
-        // Morocco: XYZ tiles (not WMS)
-        map.addSource('geol-ma-tiles', {
-            type: 'raster',
-            tiles: [SOURCES.geol_ma.url],
-            tileSize: 256,
-            minzoom: 5,
-            maxzoom: 10,
-            attribution: SOURCES.geol_ma.attribution
-        });
-
-        map.addLayer({
-            id: 'geol-ma-layer',
-            type: 'raster',
-            source: 'geol-ma-tiles',
-            paint: { 'raster-opacity': 0.5 },
-            layout: { 'visibility': 'none' }
-        });
 
         // --- RIVERS (Natural Earth 50m) ---
         map.addSource('rivers', {
@@ -916,7 +886,6 @@
             });
         })();
         setupLayerControl('geol-pt-layer', 'geol-pt-toggle', 'geol-pt-opacity', 'geol-pt-opacity-val');
-        setupLayerControl('geol-ma-layer', 'geol-ma-toggle', 'geol-ma-opacity', 'geol-ma-opacity-val');
 
         // =========================================================
         // GEOLOGY IDENTIFY (click-to-identify)
