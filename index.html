@@ -427,6 +427,22 @@
         </div>
     </div>
 
+    <!-- Atlas Labels -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="atlas-toggle"> Atlas Labels</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="atlas-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="atlas-opacity-val">100%</span>
+            </div>
+            <p class="layer-description">Mountain ranges, peaks, seas. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a></p>
+        </div>
+    </div>
+
     <!-- Geology group -->
     <div class="layer-group">
         <div class="layer-header">
@@ -705,6 +721,112 @@
             }
         });
 
+        // --- ATLAS LABELS (mountains, seas, peaks) ---
+        map.addSource('geography-regions', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_geography_regions_polys.geojson',
+            attribution: '<a href="https://www.naturalearthdata.com">Natural Earth</a>'
+        });
+
+        map.addSource('geography-marine', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_geography_marine_polys.geojson'
+        });
+
+        map.addSource('geography-peaks', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_regions_elevation_points.geojson'
+        });
+
+        // Mountain ranges: uppercase brown text
+        map.addLayer({
+            id: 'atlas-mountains',
+            type: 'symbol',
+            source: 'geography-regions',
+            filter: ['==', ['get', 'FEATURECLA'], 'Range/mtn'],
+            layout: {
+                'visibility': 'none',
+                'symbol-placement': 'point',
+                'text-field': ['get', 'NAME'],
+                'text-font': ['Noto Sans Medium'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    2, ['match', ['get', 'SCALERANK'], 1, 11, 2, 9, 8],
+                    6, ['match', ['get', 'SCALERANK'], 1, 16, 2, 13, 11],
+                    10, ['match', ['get', 'SCALERANK'], 1, 20, 2, 16, 14]
+                ],
+                'text-letter-spacing': 0.15,
+                'text-max-width': 12,
+                'text-allow-overlap': false,
+                'text-padding': 5
+            },
+            paint: {
+                'text-color': '#6b4c3b',
+                'text-halo-color': 'rgba(255, 255, 255, 0.8)',
+                'text-halo-width': 1.5
+            },
+            minzoom: 2,
+            maxzoom: 10
+        });
+
+        // Seas and oceans: italic blue text
+        map.addLayer({
+            id: 'atlas-seas',
+            type: 'symbol',
+            source: 'geography-marine',
+            layout: {
+                'visibility': 'none',
+                'symbol-placement': 'point',
+                'text-field': ['get', 'NAME'],
+                'text-font': ['Noto Sans Italic'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    2, ['match', ['get', 'SCALERANK'], 0, 14, 1, 11, 2, 9, 8],
+                    6, ['match', ['get', 'SCALERANK'], 0, 20, 1, 16, 2, 13, 11]
+                ],
+                'text-letter-spacing': 0.1,
+                'text-max-width': 10,
+                'text-allow-overlap': false,
+                'text-padding': 5
+            },
+            paint: {
+                'text-color': '#4a7fa5',
+                'text-halo-color': 'rgba(255, 255, 255, 0.5)',
+                'text-halo-width': 1
+            },
+            minzoom: 2,
+            maxzoom: 10
+        });
+
+        // Peaks: name + elevation
+        map.addLayer({
+            id: 'atlas-peaks',
+            type: 'symbol',
+            source: 'geography-peaks',
+            layout: {
+                'visibility': 'none',
+                'symbol-placement': 'point',
+                'text-field': ['concat', ['get', 'NAME'], '\n', ['to-string', ['get', 'ELEVATION']], ' m'],
+                'text-font': ['Noto Sans Regular'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    4, 9,
+                    8, 12
+                ],
+                'text-offset': [0, 0.5],
+                'text-anchor': 'top',
+                'text-allow-overlap': false,
+                'text-padding': 3
+            },
+            paint: {
+                'text-color': '#5a3e2b',
+                'text-halo-color': 'rgba(255, 255, 255, 0.85)',
+                'text-halo-width': 1.5
+            },
+            minzoom: 5,
+            maxzoom: 12
+        });
+
         // --- GEOLOGICAL LAYERS (WMS) ---
         function addGeologyWMS(id, src) {
             map.addSource(id + '-wms', {
@@ -858,6 +980,27 @@
                 var opacity = parseInt(this.value) / 100;
                 map.setPaintProperty('rivers-line', 'line-opacity', opacity);
                 map.setPaintProperty('rivers-label', 'text-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+
+        // Atlas Labels: single toggle controls mountains + seas + peaks
+        (function() {
+            var toggle = document.getElementById('atlas-toggle');
+            var slider = document.getElementById('atlas-opacity');
+            var valueDisplay = document.getElementById('atlas-opacity-val');
+            var layers = ['atlas-mountains', 'atlas-seas', 'atlas-peaks'];
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                layers.forEach(function(id) { map.setLayoutProperty(id, 'visibility', vis); });
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                layers.forEach(function(id) {
+                    map.setPaintProperty(id, 'text-opacity', opacity);
+                });
                 valueDisplay.textContent = this.value + '%';
             });
         })();
