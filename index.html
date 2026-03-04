@@ -198,6 +198,11 @@
         .geol-legend img {
             display: block;
             width: 100%;
+            cursor: pointer;
+        }
+
+        .geol-legend img:hover {
+            opacity: 0.85;
         }
 
         .opacity-value {
@@ -449,6 +454,9 @@
                     <input type="range" id="geol-fr-opacity" min="0" max="100" value="50">
                     <span class="opacity-value" id="geol-fr-opacity-val">50%</span>
                 </div>
+                <div class="geol-legend" id="geol-fr-legend">
+                    <img loading="lazy" src="https://mapsref.brgm.fr/legendes/geoservices/Geologie1000_legende.jpg" alt="France geological legend">
+                </div>
             </div>
 
             <div class="geol-item">
@@ -471,6 +479,36 @@
                 </div>
                 <div class="geol-legend" id="geol-ca-legend">
                     <img loading="lazy" src="https://maps-cartes.services.geo.ca/server_serveur/services/NRCan/cdn_geol_compil_en/MapServer/WMSServer?request=GetLegendGraphic&version=1.1.1&format=image/png&layer=0" alt="Canada geological legend">
+                </div>
+            </div>
+
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-be-toggle"> Belgium</label>
+                <span class="layer-description">&#169; <a href="https://geologie.wallonie.be" style="color:#2d6a4f">SPW</a> + <a href="https://www.dov.vlaanderen.be" style="color:#2d6a4f">DOV</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-be-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-be-opacity-val">50%</span>
+                </div>
+            </div>
+
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-pt-toggle"> Portugal</label>
+                <span class="layer-description">500K &#169; <a href="https://www.lneg.pt" style="color:#2d6a4f">LNEG</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-pt-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-pt-opacity-val">50%</span>
+                </div>
+            </div>
+
+            <div class="geol-item">
+                <label><input type="checkbox" id="geol-ma-toggle"> Morocco</label>
+                <span class="layer-description">&#169; <a href="https://cartesgeoscientifiques.mem.gov.ma" style="color:#2d6a4f">MEM Morocco</a></span>
+                <div class="slider-row">
+                    <span class="slider-label">Opacity</span>
+                    <input type="range" id="geol-ma-opacity" min="0" max="100" value="50">
+                    <span class="opacity-value" id="geol-ma-opacity-val">50%</span>
                 </div>
             </div>
         </div>
@@ -537,6 +575,25 @@
             url: 'https://maps-cartes.services.geo.ca/server_serveur/services/NRCan/cdn_geol_compil_en/MapServer/WMSServer',
             layers: '0',
             attribution: '&copy; <a href="https://natural-resources.canada.ca">NRCan</a>'
+        },
+        geol_be_wa: {
+            url: 'https://geoservices.wallonie.be/arcgis/services/SOL_SOUS_SOL/CARTE_GEOLOGIQUE_SIMPLE/MapServer/WMSServer',
+            layers: '0',
+            attribution: '&copy; <a href="https://geologie.wallonie.be">SPW Wallonie</a>'
+        },
+        geol_be_vl: {
+            url: 'https://www.dov.vlaanderen.be/geoserver/wms',
+            layers: 'dov-pub-ALBON_DUT_Geology:BE-VLG_ALBON_NL_50k_GeolUNITS',
+            attribution: '&copy; <a href="https://www.dov.vlaanderen.be">DOV Vlaanderen</a>'
+        },
+        geol_pt: {
+            url: 'https://sig.lneg.pt/server/services/CGP500k/MapServer/WMSServer',
+            layers: '0,2',
+            attribution: '&copy; <a href="https://www.lneg.pt">LNEG</a>'
+        },
+        geol_ma: {
+            url: 'https://cartesgeoscientifiques.mem.gov.ma/data/fgl/{z}/{x}/{y}.png',
+            attribution: '&copy; <a href="https://cartesgeoscientifiques.mem.gov.ma">MEM Morocco</a>'
         }
     };
 
@@ -693,6 +750,25 @@
         addGeologyWMS('geol-fr', SOURCES.geol_fr);
         addGeologyWMS('geol-uk', SOURCES.geol_uk);
         addGeologyWMS('geol-ca', SOURCES.geol_ca);
+        addGeologyWMS('geol-be-wa', SOURCES.geol_be_wa);
+        addGeologyWMS('geol-be-vl', SOURCES.geol_be_vl);
+        addGeologyWMS('geol-pt', SOURCES.geol_pt);
+
+        // Morocco: XYZ tiles (not WMS)
+        map.addSource('geol-ma-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.geol_ma.url],
+            tileSize: 256,
+            attribution: SOURCES.geol_ma.attribution
+        });
+
+        map.addLayer({
+            id: 'geol-ma-layer',
+            type: 'raster',
+            source: 'geol-ma-tiles',
+            paint: { 'raster-opacity': 0.5 },
+            layout: { 'visibility': 'none' }
+        });
 
         // --- RIVERS (Natural Earth 50m) ---
         map.addSource('rivers', {
@@ -815,9 +891,228 @@
         })();
 
         setupLayerControl('geol-es-layer', 'geol-es-toggle', 'geol-es-opacity', 'geol-es-opacity-val');
-        setupLayerControl('geol-fr-layer', 'geol-fr-toggle', 'geol-fr-opacity', 'geol-fr-opacity-val');
+        setupLayerControl('geol-fr-layer', 'geol-fr-toggle', 'geol-fr-opacity', 'geol-fr-opacity-val', null, 'geol-fr-legend');
         setupLayerControl('geol-uk-layer', 'geol-uk-toggle', 'geol-uk-opacity', 'geol-uk-opacity-val');
         setupLayerControl('geol-ca-layer', 'geol-ca-toggle', 'geol-ca-opacity', 'geol-ca-opacity-val', null, 'geol-ca-legend');
+        // Belgium: single toggle controls both Wallonia + Flanders layers
+        (function() {
+            var toggle = document.getElementById('geol-be-toggle');
+            var slider = document.getElementById('geol-be-opacity');
+            var valueDisplay = document.getElementById('geol-be-opacity-val');
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                map.setLayoutProperty('geol-be-wa-layer', 'visibility', vis);
+                map.setLayoutProperty('geol-be-vl-layer', 'visibility', vis);
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('geol-be-wa-layer', 'raster-opacity', opacity);
+                map.setPaintProperty('geol-be-vl-layer', 'raster-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+        setupLayerControl('geol-pt-layer', 'geol-pt-toggle', 'geol-pt-opacity', 'geol-pt-opacity-val');
+        setupLayerControl('geol-ma-layer', 'geol-ma-toggle', 'geol-ma-opacity', 'geol-ma-opacity-val');
+
+        // =========================================================
+        // GEOLOGY IDENTIFY (click-to-identify)
+        // =========================================================
+
+        var CA_LITHOLOGY = [
+            'Mixed volcanic', 'Alkalic volcanic', 'Felsic volcanic',
+            'Intermediate volcanic', 'Mafic volcanic', 'Unknown intrusive',
+            'Alkalic intrusive', 'Anorthosite', 'Felsic intrusive',
+            'Pegmatite', 'Intermediate intrusive', 'Mafic intrusive',
+            'Ultramafic intrusive', 'Amphibolite', 'Charnockite',
+            'Eclogite', 'Gneiss', 'Orthogneiss', 'Paragneiss',
+            'Granulite', 'Marble', 'Migmatite', 'Quartzite', 'Schist',
+            'Fault', 'Melange', 'Unconsolidated', 'Unknown',
+            'Other chemical', 'Carbonate', 'Evaporite',
+            'Mixed siliciclastic', 'Coarse siliciclastic', 'Fine siliciclastic'
+        ];
+
+        var geolPopup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, maxWidth: '300px' });
+
+        function lngLatToEpsg3857(lngLat) {
+            var R = 6378137;
+            return {
+                x: lngLat.lng * Math.PI * R / 180,
+                y: Math.log(Math.tan((90 + lngLat.lat) * Math.PI / 360)) * R
+            };
+        }
+
+        function buildWmsFeatureInfoUrl(baseUrl, layers, bounds, canvas, point) {
+            var sw3857 = lngLatToEpsg3857(bounds.getSouthWest());
+            var ne3857 = lngLatToEpsg3857(bounds.getNorthEast());
+            var click3857 = lngLatToEpsg3857(point);
+            var w = canvas.width, h = canvas.height;
+
+            // Pixel position of click within viewport
+            var px = Math.round((click3857.x - sw3857.x) / (ne3857.x - sw3857.x) * w);
+            var py = Math.round((ne3857.y - click3857.y) / (ne3857.y - sw3857.y) * h);
+
+            return baseUrl +
+                '?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo' +
+                '&LAYERS=' + layers + '&QUERY_LAYERS=' + layers +
+                '&SRS=EPSG:3857' +
+                '&BBOX=' + sw3857.x + ',' + sw3857.y + ',' + ne3857.x + ',' + ne3857.y +
+                '&WIDTH=' + w + '&HEIGHT=' + h +
+                '&X=' + px + '&Y=' + py;
+        }
+
+        map.on('click', function(e) {
+            var lngLat = e.lngLat;
+            var bounds = map.getBounds();
+            var canvas = map.getCanvas();
+            var queries = [];
+
+            // --- Canada: ArcGIS REST identify ---
+            if (document.getElementById('geol-ca-toggle').checked) {
+                var caUrl = 'https://maps-cartes.services.geo.ca/server_serveur/rest/services/NRCan/cdn_geol_compil_en/MapServer/identify?' +
+                    'geometry=' + lngLat.lng + ',' + lngLat.lat +
+                    '&geometryType=esriGeometryPoint&sr=4326&layers=all:0&tolerance=2' +
+                    '&mapExtent=' + bounds.getWest() + ',' + bounds.getSouth() + ',' + bounds.getEast() + ',' + bounds.getNorth() +
+                    '&imageDisplay=' + canvas.width + ',' + canvas.height + ',96' +
+                    '&returnGeometry=false&f=json';
+                queries.push(
+                    fetch(caUrl).then(function(r) { return r.json(); }).then(function(data) {
+                        if (!data.results || !data.results.length) return null;
+                        var pv = data.results[0].attributes['Pixel Value'];
+                        if (pv === 'NoData') return null;
+                        var name = CA_LITHOLOGY[parseInt(pv)] || 'Unknown (' + pv + ')';
+                        return '<strong>' + name + '</strong><br><span style="color:#888;font-size:11px">Canada &mdash; NRCan</span>';
+                    }).catch(function() { return null; })
+                );
+            }
+
+            // --- Spain: WMS GetFeatureInfo (ArcGIS XML) ---
+            if (document.getElementById('geol-es-toggle').checked) {
+                var esUrl = buildWmsFeatureInfoUrl(
+                    SOURCES.geol_es.url, '0', bounds, canvas, lngLat
+                ) + '&INFO_FORMAT=text/xml';
+                queries.push(
+                    fetch(esUrl).then(function(r) { return r.text(); }).then(function(xml) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(xml, 'text/xml');
+                        var fields = doc.querySelector('FIELDS');
+                        if (!fields) return null;
+                        var litho = fields.getAttribute('Litologíagenérica') || fields.getAttribute('Litologia generica') || '';
+                        var era = fields.getAttribute('Eon-Era') || '';
+                        var sistema = fields.getAttribute('Sistema') || '';
+                        var serie = fields.getAttribute('Serie') || '';
+                        if (!litho && !era) return null;
+                        var age = [era, sistema, serie].filter(function(s) { return s && s.trim(); }).join(' > ');
+                        var html = '';
+                        if (litho) html += '<strong>' + litho + '</strong><br>';
+                        if (age) html += '<span style="font-size:12px">' + age + '</span><br>';
+                        html += '<span style="color:#888;font-size:11px">Spain 1:1M &mdash; IGME</span>';
+                        return html;
+                    }).catch(function() { return null; })
+                );
+            }
+
+            // --- Belgium: Wallonia (WMS XML) + Flanders (GeoJSON) ---
+            if (document.getElementById('geol-be-toggle').checked) {
+                // Wallonia: ArcGIS XML with SIGLE code
+                var waUrl = buildWmsFeatureInfoUrl(
+                    SOURCES.geol_be_wa.url, '1', bounds, canvas, lngLat
+                ) + '&INFO_FORMAT=text/xml';
+                queries.push(
+                    fetch(waUrl).then(function(r) { return r.text(); }).then(function(xml) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(xml, 'text/xml');
+                        var fields = doc.querySelector('FIELDS');
+                        if (!fields) return null;
+                        var sigle = fields.getAttribute('Raster.SIGLE') || '';
+                        if (!sigle) return null;
+                        return '<strong>' + sigle + '</strong><br><span style="color:#888;font-size:11px">Wallonia &mdash; SPW</span>';
+                    }).catch(function() { return null; })
+                );
+                // Flanders: GeoJSON with formation + lithology
+                var vlUrl = buildWmsFeatureInfoUrl(
+                    SOURCES.geol_be_vl.url, SOURCES.geol_be_vl.layers, bounds, canvas, lngLat
+                ) + '&INFO_FORMAT=application/json&FEATURE_COUNT=1';
+                queries.push(
+                    fetch(vlUrl).then(function(r) { return r.json(); }).then(function(data) {
+                        if (!data.features || !data.features.length) return null;
+                        var props = data.features[0].properties;
+                        var formation = props.ouderdom || '';
+                        var litho = props.beschr || '';
+                        if (!formation && !litho) return null;
+                        var html = '';
+                        if (formation) html += '<strong>' + formation + '</strong><br>';
+                        if (litho) html += '<span style="font-size:12px">' + litho + '</span><br>';
+                        html += '<span style="color:#888;font-size:11px">Flanders &mdash; DOV</span>';
+                        return html;
+                    }).catch(function() { return null; })
+                );
+            }
+
+            // --- Portugal: WMS GetFeatureInfo (ArcGIS XML) ---
+            if (document.getElementById('geol-pt-toggle').checked) {
+                var ptUrl = buildWmsFeatureInfoUrl(
+                    SOURCES.geol_pt.url, '0,2', bounds, canvas, lngLat
+                ) + '&INFO_FORMAT=text/xml';
+                queries.push(
+                    fetch(ptUrl).then(function(r) { return r.text(); }).then(function(xml) {
+                        var parser = new DOMParser();
+                        var doc = parser.parseFromString(xml, 'text/xml');
+                        var fields = doc.querySelector('FIELDS');
+                        if (!fields) return null;
+                        var descricao = fields.getAttribute('Descricao') || fields.getAttribute('DESCRICAO') || '';
+                        var eratema = fields.getAttribute('Eratema') || fields.getAttribute('ERATEMA') || '';
+                        var sistema = fields.getAttribute('Sistema') || fields.getAttribute('SISTEMA') || '';
+                        if (!descricao && !eratema) return null;
+                        var age = [eratema, sistema].filter(function(s) { return s && s.trim(); }).join(' > ');
+                        var html = '';
+                        if (descricao) html += '<strong>' + descricao + '</strong><br>';
+                        if (age) html += '<span style="font-size:12px">' + age + '</span><br>';
+                        html += '<span style="color:#888;font-size:11px">Portugal 500K &mdash; LNEG</span>';
+                        return html;
+                    }).catch(function() { return null; })
+                );
+            }
+
+            // --- UK: WMS GetFeatureInfo (text/plain) ---
+            if (document.getElementById('geol-uk-toggle').checked) {
+                var ukUrl = buildWmsFeatureInfoUrl(
+                    SOURCES.geol_uk.url, SOURCES.geol_uk.layers, bounds, canvas, lngLat
+                ) + '&INFO_FORMAT=text/plain';
+                queries.push(
+                    fetch(ukUrl).then(function(r) { return r.text(); }).then(function(txt) {
+                        var getVal = function(key) {
+                            var m = txt.match(new RegExp(key + "\\s*=\\s*'([^']*)'"));
+                            return m ? m[1] : '';
+                        };
+                        var unit = getVal('LEX_D');
+                        var litho = getVal('RCS_D');
+                        var maxAge = getVal('MAX_PERIOD');
+                        var minAge = getVal('MIN_PERIOD');
+                        if (!unit && !litho) return null;
+                        var age = maxAge === minAge ? maxAge : maxAge + ' \u2013 ' + minAge;
+                        var html = '';
+                        if (unit) html += '<strong>' + unit + '</strong><br>';
+                        if (litho) html += '<span style="font-size:12px">' + litho + '</span><br>';
+                        if (age) html += '<span style="font-size:12px;color:#666">' + age + '</span><br>';
+                        html += '<span style="color:#888;font-size:11px">UK 625K Bedrock &mdash; BGS</span>';
+                        return html;
+                    }).catch(function() { return null; })
+                );
+            }
+
+            if (!queries.length) return;
+
+            Promise.all(queries).then(function(results) {
+                var parts = results.filter(function(r) { return r; });
+                if (!parts.length) return;
+                geolPopup
+                    .setLngLat(lngLat)
+                    .setHTML('<div style="font-size:13px;line-height:1.5">' + parts.join('<hr style="margin:6px 0;border:none;border-top:1px solid #eee">') + '</div>')
+                    .addTo(map);
+            });
+        });
     });
 
     // =========================================================
@@ -855,6 +1150,14 @@
     }
     document.getElementById('panel-title').addEventListener('click', toggleLayersList);
     document.getElementById('panel-subtitle').addEventListener('click', toggleLayersList);
+
+    // Legend images: click to open full-size in new tab
+    document.querySelectorAll('.geol-legend img').forEach(function(img) {
+        img.title = 'Click to open full-size legend';
+        img.addEventListener('click', function() {
+            window.open(this.src, 'legend', 'width=650,height=750,scrollbars=yes,resizable=yes');
+        });
+    });
 
     // Accordion expand/collapse (multiple can be open)
     document.querySelectorAll('.expand-btn').forEach(function(btn) {

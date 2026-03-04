@@ -46,6 +46,10 @@ Everything lives in `index.html` (~800 lines):
 | BRGM (France) | geoservices.brgm.fr | WMS |
 | BGS (UK) | ogc.bgs.ac.uk | WMS |
 | NRCan (Canada) | maps-cartes.services.geo.ca | WMS |
+| SPW (Belgium/Wallonia) | geoservices.wallonie.be | WMS |
+| DOV (Belgium/Flanders) | www.dov.vlaanderen.be | WMS |
+| LNEG (Portugal) | sig.lneg.pt | WMS |
+| MEM (Morocco) | cartesgeoscientifiques.mem.gov.ma | XYZ tiles |
 
 ## Development Guidelines
 - Keep the single-file architecture: no build tools, no splitting into modules
