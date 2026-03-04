@@ -68,26 +68,16 @@ Everything lives in `index.html` (~800 lines):
 ## Known Issues
 - Spain geology (IGME): CORS issues — may not load in browser
 - Hillshade opacity slider controls `hillshade-exaggeration`, not `hillshade-opacity`
-- Geological legends NOT yet implemented (see next section)
 - Rivers dataset (Natural Earth 10m) has ~1,455 rivers — smaller national rivers (e.g. Júcar) may not be included
+- Atlas Labels: Natural Earth 10m only has 222 mountain ranges worldwide. Coverage is uneven — well-covered areas (Central Europe, Himalayas, Andes) vs gaps (Spain has only Cantábrica, Sierra Nevada, Sierra Morena; missing Sistema Central, Ibérico, Bética, Costero-Catalana, Montes de Toledo). Contributions welcome: add missing ranges to a custom GeoJSON overlay or submit to [Natural Earth](https://github.com/nvkelso/natural-earth-vector)
 
 ## Next Steps (Priority Order)
 
-### 1. Geological Legends
-Legend images via `<img>` tags (NOT fetch — avoids CORS issues):
-- **Canada (NRCan)**: 150x612px, 12KB — trivial, just works
+### 1. Geological Legends (partially done)
+Implemented: Canada (NRCan), France (BRGM). Click to open full-size in independent window.
+Remaining:
 - **UK (BGS)**: 499x1720px — needs scrollable container
 - **Spain (IGME)**: 822x2286px — needs scrollable container, use GetLegendGraphic URL
-- **France (BRGM)**: Dynamic legend is 10,014px tall (unusable). Use static JPG: `https://mapsref.brgm.fr/legendes/geoservices/Geologie1000_legende.jpg` (600x732)
-
-Implementation: add `<img loading="lazy">` inside geology group. Wrap in scrollable div.
-
-### 2. Atlas Labels (mountains, seas, peaks) — OPTIONAL toggle, OFF by default
-Use Natural Earth GeoJSON datasets:
-- `ne_50m_geography_regions_polys.geojson` — mountain ranges, deserts, plains
-- `ne_10m_geography_regions_elevation_points.geojson` — peaks with elevation
-- `ne_50m_geography_marine_polys.geojson` — oceans, seas, bays
-Atlas conventions: UPPERCASE brown for mountains, italic blue for water.
 
 ### 3. Morocco Geology Layer (BLOCKED)
 - **Source**: XYZ tiles at `cartesgeoscientifiques.mem.gov.ma/data/fgl/{z}/{x}/{y}.png`
