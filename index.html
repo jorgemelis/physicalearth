@@ -427,6 +427,22 @@
         </div>
     </div>
 
+    <!-- Minor Rivers (OpenFreeMap) -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="minor-rivers-toggle"> Minor Rivers</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="minor-rivers-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="minor-rivers-opacity-val">100%</span>
+            </div>
+            <p class="layer-description">Smaller rivers (z8+). Data: <a href="https://openfreemap.org" style="color:#2d6a4f">OpenFreeMap</a> / OSM</p>
+        </div>
+    </div>
+
     <!-- Atlas Labels -->
     <div class="layer-group">
         <div class="layer-header">
@@ -721,6 +737,70 @@
             }
         });
 
+        // --- MINOR RIVERS (OpenFreeMap vector tiles) ---
+        map.addSource('ofm', {
+            type: 'vector',
+            url: 'https://tiles.openfreemap.org/planet'
+        });
+
+        map.addLayer({
+            id: 'minor-rivers-line',
+            type: 'line',
+            source: 'ofm',
+            'source-layer': 'waterway',
+            filter: ['==', ['get', 'class'], 'river'],
+            layout: {
+                'visibility': 'none',
+                'line-cap': 'round',
+                'line-join': 'round'
+            },
+            paint: {
+                'line-color': '#3a7eb8',
+                'line-opacity': 1.0,
+                'line-width': [
+                    'interpolate', ['linear'], ['zoom'],
+                    8, 0.8,
+                    12, 1.5,
+                    16, 3
+                ]
+            },
+            minzoom: 8
+        });
+
+        map.addLayer({
+            id: 'minor-rivers-label',
+            type: 'symbol',
+            source: 'ofm',
+            'source-layer': 'waterway',
+            filter: ['all',
+                ['==', ['get', 'class'], 'river'],
+                ['has', 'name']
+            ],
+            layout: {
+                'visibility': 'none',
+                'symbol-placement': 'line',
+                'text-field': ['coalesce', ['get', 'name:es'], ['get', 'name']],
+                'text-font': ['Noto Sans Italic'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    9, 9,
+                    12, 11,
+                    16, 14
+                ],
+                'text-letter-spacing': 0.05,
+                'symbol-spacing': 400,
+                'text-max-angle': 25,
+                'text-rotation-alignment': 'map',
+                'text-pitch-alignment': 'viewport'
+            },
+            paint: {
+                'text-color': '#2a6e96',
+                'text-halo-color': 'rgba(255, 255, 255, 0.85)',
+                'text-halo-width': 1.5
+            },
+            minzoom: 9
+        });
+
         // --- ATLAS LABELS (mountains, seas, peaks) ---
         map.addSource('geography-regions', {
             type: 'geojson',
@@ -980,6 +1060,26 @@
                 var opacity = parseInt(this.value) / 100;
                 map.setPaintProperty('rivers-line', 'line-opacity', opacity);
                 map.setPaintProperty('rivers-label', 'text-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+
+        // Minor Rivers: toggle controls both line + label layers
+        (function() {
+            var toggle = document.getElementById('minor-rivers-toggle');
+            var slider = document.getElementById('minor-rivers-opacity');
+            var valueDisplay = document.getElementById('minor-rivers-opacity-val');
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                map.setLayoutProperty('minor-rivers-line', 'visibility', vis);
+                map.setLayoutProperty('minor-rivers-label', 'visibility', vis);
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('minor-rivers-line', 'line-opacity', opacity);
+                map.setPaintProperty('minor-rivers-label', 'text-opacity', opacity);
                 valueDisplay.textContent = this.value + '%';
             });
         })();
