@@ -1344,14 +1344,66 @@
     // COORDINATES DISPLAY
     // =========================================================
 
+    // --- Elevation from Terrarium DEM tiles ---
+    var elevTileCache = {};
+    var elevCanvas = document.createElement('canvas');
+    var elevCtx = elevCanvas.getContext('2d', { willReadFrequently: true });
+    elevCanvas.width = 512;
+    elevCanvas.height = 512;
+
+    function getElevation(lngLat, zoom, callback) {
+        var z = Math.min(Math.floor(zoom), 14);
+        var n = Math.pow(2, z);
+        var latRad = lngLat.lat * Math.PI / 180;
+        var tileX = Math.floor((lngLat.lng + 180) / 360 * n);
+        var tileY = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+        tileX = Math.max(0, Math.min(n - 1, tileX));
+        tileY = Math.max(0, Math.min(n - 1, tileY));
+
+        // Pixel within tile (512px tiles)
+        var px = Math.floor(((lngLat.lng + 180) / 360 * n - tileX) * 512);
+        var py = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n - tileY) * 512);
+        px = Math.max(0, Math.min(511, px));
+        py = Math.max(0, Math.min(511, py));
+
+        var key = z + '/' + tileX + '/' + tileY;
+        if (elevTileCache[key]) {
+            if (elevTileCache[key] === 'loading') return;
+            readPixel(elevTileCache[key], px, py, callback);
+            return;
+        }
+
+        elevTileCache[key] = 'loading';
+        var img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            elevTileCache[key] = img;
+            readPixel(img, px, py, callback);
+        };
+        img.onerror = function() { delete elevTileCache[key]; };
+        img.src = 'https://tiles.mapterhorn.com/' + key + '.webp';
+    }
+
+    function readPixel(img, px, py, callback) {
+        elevCtx.drawImage(img, 0, 0);
+        var data = elevCtx.getImageData(px, py, 1, 1).data;
+        // Terrarium encoding: elevation = (r * 256 + g + b / 256) - 32768
+        var elev = (data[0] * 256 + data[1] + data[2] / 256) - 32768;
+        callback(Math.round(elev));
+    }
+
     map.on('mousemove', function(e) {
         var lat = e.lngLat.lat.toFixed(4);
         var lng = e.lngLat.lng.toFixed(4);
         var ns = e.lngLat.lat >= 0 ? 'N' : 'S';
         var ew = e.lngLat.lng >= 0 ? 'E' : 'W';
-        document.getElementById('coord-text').textContent =
-            Math.abs(lat) + '\u00B0' + ns + '  ' + Math.abs(lng) + '\u00B0' + ew +
+        var coordText = Math.abs(lat) + '\u00B0' + ns + '  ' + Math.abs(lng) + '\u00B0' + ew +
             '  z' + map.getZoom().toFixed(1);
+        document.getElementById('coord-text').textContent = coordText;
+
+        getElevation(e.lngLat, map.getZoom(), function(elev) {
+            document.getElementById('coord-text').textContent = coordText + '  ' + elev + ' m';
+        });
     });
 
     // =========================================================
