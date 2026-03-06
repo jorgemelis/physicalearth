@@ -934,6 +934,40 @@
             maxzoom: 12
         });
 
+        // Lake names (Natural Earth 10m)
+        map.addSource('lakes', {
+            type: 'geojson',
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_lakes.geojson'
+        });
+
+        map.addLayer({
+            id: 'atlas-lake-labels',
+            type: 'symbol',
+            source: 'lakes',
+            filter: ['has', 'name'],
+            layout: {
+                'visibility': 'none',
+                'text-field': ['get', 'name'],
+                'text-font': ['Noto Sans Italic'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    3, 10,
+                    6, 14,
+                    10, 18
+                ],
+                'text-letter-spacing': 0.1,
+                'text-max-width': 8,
+                'text-allow-overlap': false,
+                'text-padding': 5
+            },
+            paint: {
+                'text-color': '#2a5f8f',
+                'text-halo-color': 'rgba(255, 255, 255, 0.7)',
+                'text-halo-width': 1.5
+            },
+            minzoom: 3
+        });
+
         // Country borders (OpenFreeMap)
         map.addLayer({
             id: 'atlas-country-borders',
@@ -1193,7 +1227,7 @@
             var toggle = document.getElementById('atlas-toggle');
             var slider = document.getElementById('atlas-opacity');
             var valueDisplay = document.getElementById('atlas-opacity-val');
-            var layers = ['atlas-mountains', 'marine-labels', 'atlas-peaks'];
+            var layers = ['atlas-mountains', 'marine-labels', 'atlas-peaks', 'atlas-lake-labels'];
 
             toggle.addEventListener('change', function() {
                 var vis = this.checked ? 'visible' : 'none';
