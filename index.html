@@ -455,7 +455,7 @@
                 <input type="range" id="atlas-opacity" min="0" max="100" value="100">
                 <span class="opacity-value" id="atlas-opacity-val">100%</span>
             </div>
-            <p class="layer-description">Mountain ranges, peaks, seas. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a></p>
+            <p class="layer-description">Mountain ranges, peaks, seas &amp; oceans. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a></p>
         </div>
     </div>
 
@@ -810,7 +810,7 @@
 
         map.addSource('geography-marine', {
             type: 'geojson',
-            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_geography_marine_polys.geojson'
+            data: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_geography_marine_polys.geojson'
         });
 
         map.addSource('geography-peaks', {
@@ -849,30 +849,41 @@
             maxzoom: 10
         });
 
-        // Seas and oceans: italic blue text
+        // Seas and oceans: italic blue text (independent layer)
         map.addLayer({
-            id: 'atlas-seas',
+            id: 'marine-labels',
             type: 'symbol',
             source: 'geography-marine',
             layout: {
                 'visibility': 'none',
                 'symbol-placement': 'point',
-                'text-field': ['get', 'NAME'],
+                'text-field': ['get', 'name'],
                 'text-font': ['Noto Sans Italic'],
                 'text-size': [
                     'interpolate', ['linear'], ['zoom'],
-                    2, ['match', ['get', 'SCALERANK'], 0, 14, 1, 11, 2, 9, 8],
-                    6, ['match', ['get', 'SCALERANK'], 0, 20, 1, 16, 2, 13, 11]
+                    2, ['match', ['get', 'featurecla'],
+                        'Ocean', 18,  'Sea', 13,  'Gulf', 11,  'Bay', 10,  9],
+                    6, ['match', ['get', 'featurecla'],
+                        'Ocean', 26,  'Sea', 18,  'Gulf', 15,  'Bay', 14,  12],
+                    10, ['match', ['get', 'featurecla'],
+                        'Ocean', 30,  'Sea', 22,  'Gulf', 18,  'Bay', 16,  14]
                 ],
-                'text-letter-spacing': 0.1,
-                'text-max-width': 10,
+                'text-letter-spacing': 0.2,
+                'text-max-width': 8,
                 'text-allow-overlap': false,
+                'text-ignore-placement': false,
                 'text-padding': 5
             },
             paint: {
-                'text-color': '#4a7fa5',
-                'text-halo-color': 'rgba(255, 255, 255, 0.5)',
-                'text-halo-width': 1
+                'text-color': '#2a5f8f',
+                'text-halo-color': 'rgba(255, 255, 255, 0.7)',
+                'text-halo-width': 1.5,
+                'text-opacity': [
+                    'interpolate', ['linear'], ['zoom'],
+                    1, 0,
+                    2, 0.5,
+                    3, 1
+                ]
             },
             minzoom: 2,
             maxzoom: 10
@@ -1089,7 +1100,7 @@
             var toggle = document.getElementById('atlas-toggle');
             var slider = document.getElementById('atlas-opacity');
             var valueDisplay = document.getElementById('atlas-opacity-val');
-            var layers = ['atlas-mountains', 'atlas-seas', 'atlas-peaks'];
+            var layers = ['atlas-mountains', 'marine-labels', 'atlas-peaks'];
 
             toggle.addEventListener('change', function() {
                 var vis = this.checked ? 'visible' : 'none';

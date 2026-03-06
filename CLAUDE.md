@@ -27,6 +27,8 @@ Everything lives in `index.html` (~800 lines):
 | Hillshade | ON | 35% |
 | OpenStreetMap | ON | 0% (slider visible, user can increase) |
 | Rivers | ON | 100% |
+| Minor Rivers | OFF | 100% |
+| Atlas Labels | OFF | 100% |
 | Geology (all) | OFF | 50% |
 
 ## UI Details
@@ -41,7 +43,7 @@ Everything lives in `index.html` (~800 lines):
 | Mapterhorn | tiles.mapterhorn.com | DEM (terrarium) |
 | EMODnet | tiles.emodnet-bathymetry.eu | Raster tiles |
 | OpenStreetMap | tile.openstreetmap.org | Raster tiles |
-| Natural Earth | raw.githubusercontent.com/nvkelso/natural-earth-vector | GeoJSON (rivers 10m) |
+| Natural Earth | raw.githubusercontent.com/nvkelso/natural-earth-vector | GeoJSON (rivers 10m, marine 10m, mountains 10m, peaks 10m) |
 | IGME (Spain) | mapas.igme.es | WMS |
 | BRGM (France) | geoservices.brgm.fr | WMS |
 | BGS (UK) | ogc.bgs.ac.uk | WMS |
@@ -59,6 +61,7 @@ Everything lives in `index.html` (~800 lines):
 - Geology layers default to OFF (visibility: 'none')
 - Follow existing patterns: `addGeologyWMS()` for new WMS layers, `setupLayerControl()` for UI bindings
 - Rivers use a custom control (toggle controls both line + label layers)
+- Seas & Oceans layer uses Natural Earth 10m marine polygons with Spanish name fallback (`name_es` → `name`)
 
 ## Deployment
 - GitHub Pages from `main` branch
