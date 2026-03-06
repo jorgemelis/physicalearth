@@ -443,6 +443,22 @@
         </div>
     </div>
 
+    <!-- Countries -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="countries-toggle"> Countries</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="countries-opacity" min="0" max="100" value="100">
+                <span class="opacity-value" id="countries-opacity-val">100%</span>
+            </div>
+            <p class="layer-description">Borders &amp; names. Data: <a href="https://openfreemap.org" style="color:#2d6a4f">OpenFreeMap</a> / OSM</p>
+        </div>
+    </div>
+
     <!-- Atlas Labels -->
     <div class="layer-group">
         <div class="layer-header">
@@ -455,7 +471,7 @@
                 <input type="range" id="atlas-opacity" min="0" max="100" value="100">
                 <span class="opacity-value" id="atlas-opacity-val">100%</span>
             </div>
-            <p class="layer-description">Mountain ranges, peaks, seas &amp; oceans. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a></p>
+            <p class="layer-description">Mountain ranges, peaks, seas. Data: <a href="https://www.naturalearthdata.com" style="color:#2d6a4f">Natural Earth</a></p>
         </div>
     </div>
 
@@ -918,6 +934,63 @@
             maxzoom: 12
         });
 
+        // Country borders (OpenFreeMap)
+        map.addLayer({
+            id: 'atlas-country-borders',
+            type: 'line',
+            source: 'ofm',
+            'source-layer': 'boundary',
+            filter: ['==', ['get', 'admin_level'], 2],
+            layout: {
+                'visibility': 'none',
+                'line-cap': 'round',
+                'line-join': 'round'
+            },
+            paint: {
+                'line-color': '#8b7355',
+                'line-opacity': 0.6,
+                'line-width': [
+                    'interpolate', ['linear'], ['zoom'],
+                    2, 0.5,
+                    6, 1.2,
+                    10, 2
+                ],
+                'line-dasharray': [6, 3]
+            }
+        });
+
+        // Country names (OpenFreeMap)
+        map.addLayer({
+            id: 'atlas-country-labels',
+            type: 'symbol',
+            source: 'ofm',
+            'source-layer': 'place',
+            filter: ['==', ['get', 'class'], 'country'],
+            layout: {
+                'visibility': 'none',
+                'text-field': ['get', 'name:latin'],
+                'text-font': ['Noto Sans Medium'],
+                'text-size': [
+                    'interpolate', ['linear'], ['zoom'],
+                    2, 10,
+                    4, 13,
+                    6, 16
+                ],
+                'text-letter-spacing': 0.1,
+                'text-max-width': 8,
+                'text-transform': 'uppercase',
+                'text-allow-overlap': false,
+                'text-padding': 5
+            },
+            paint: {
+                'text-color': '#6b5a47',
+                'text-halo-color': 'rgba(255, 255, 255, 0.8)',
+                'text-halo-width': 1.5
+            },
+            minzoom: 2,
+            maxzoom: 8
+        });
+
         // --- GEOLOGICAL LAYERS (WMS) ---
         function addGeologyWMS(id, src) {
             map.addSource(id + '-wms', {
@@ -1091,6 +1164,26 @@
                 var opacity = parseInt(this.value) / 100;
                 map.setPaintProperty('minor-rivers-line', 'line-opacity', opacity);
                 map.setPaintProperty('minor-rivers-label', 'text-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+
+        // Countries: toggle controls borders + labels
+        (function() {
+            var toggle = document.getElementById('countries-toggle');
+            var slider = document.getElementById('countries-opacity');
+            var valueDisplay = document.getElementById('countries-opacity-val');
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                map.setLayoutProperty('atlas-country-borders', 'visibility', vis);
+                map.setLayoutProperty('atlas-country-labels', 'visibility', vis);
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('atlas-country-labels', 'text-opacity', opacity);
+                map.setPaintProperty('atlas-country-borders', 'line-opacity', opacity * 0.6);
                 valueDisplay.textContent = this.value + '%';
             });
         })();
