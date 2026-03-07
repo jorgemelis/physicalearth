@@ -29,7 +29,7 @@ Everything lives in `index.html` (~800 lines):
 | Hypsometric Tints | ON | 100% |
 | Bathymetry | ON | 100% |
 | Hillshade | ON | 35% |
-| Reference layer (Satellite/OSM) | Satellite selected | 50% |
+| Reference layer (Satellite/OSM) | OSM selected | 0% |
 | Rivers | ON | 100% |
 | Minor Rivers | OFF | 100% |
 | Atlas Labels | OFF | 100% |
