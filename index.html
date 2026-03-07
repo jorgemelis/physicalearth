@@ -295,23 +295,77 @@
             position: absolute;
             bottom: 32px;
             left: 16px;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(8px);
-            padding: 8px 14px;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(12px);
+            padding: 10px 16px;
+            border-radius: 10px;
             font-size: 12px;
             color: #555;
             z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+            max-width: 280px;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #info-badge .info-title {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a2e;
+            letter-spacing: -0.3px;
+        }
+
+        #info-badge .info-tagline {
+            font-size: 11px;
+            color: #777;
+            font-style: italic;
+        }
+
+        #info-badge .info-detail {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 11.5px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        #info-badge.expanded .info-detail {
+            display: block;
+        }
+
+        #info-badge .info-detail p {
+            margin: 0 0 6px;
+        }
+
+        #info-badge .info-detail p:last-child {
+            margin-bottom: 0;
         }
 
         #info-badge a {
             color: #2d6a4f;
             text-decoration: none;
+            font-weight: 600;
         }
 
         #info-badge a:hover {
             text-decoration: underline;
+        }
+
+        #info-badge .gh-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #info-badge .gh-link svg {
+            width: 13px;
+            height: 13px;
+            fill: #2d6a4f;
+            flex-shrink: 0;
         }
 
         /* Coordinates display */
@@ -328,6 +382,52 @@
             z-index: 10;
             font-variant-numeric: tabular-nums;
             font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        /* Reference layer selector */
+        .basemap-selector-group {
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .basemap-selector-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .basemap-selector {
+            display: flex;
+            gap: 5px;
+        }
+
+        .basemap-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .basemap-btn:hover {
+            border-color: #aaa;
+        }
+
+        .basemap-btn.active {
+            border-color: #2d6a4f;
+            background: #edf5f0;
+            color: #2d6a4f;
         }
 
         /* MapLibre overrides */
@@ -347,6 +447,20 @@
     <p class="subtitle" id="panel-subtitle">The atlas the internet is missing</p>
 
     <div id="layers-list" class="open">
+    <!-- Reference Layer selector (orientation overlay on top of relief) -->
+    <div class="basemap-selector-group">
+        <div class="basemap-selector-label">Reference layer</div>
+        <div class="basemap-selector">
+            <button class="basemap-btn" id="ref-satellite">Satellite</button>
+            <button class="basemap-btn active" id="ref-osm">OSM</button>
+        </div>
+        <div class="slider-row" style="margin-top:6px;">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="ref-opacity" min="0" max="100" value="50">
+            <span class="opacity-value" id="ref-opacity-val">50%</span>
+        </div>
+    </div>
+
     <!-- Hypsometric Tints -->
     <div class="layer-group">
         <div class="layer-header">
@@ -392,22 +506,6 @@
                 <span class="opacity-value" id="hillshade-opacity-val">35%</span>
             </div>
             <p class="layer-description">3D terrain shading (illumination NW)</p>
-        </div>
-    </div>
-
-    <!-- OSM Overlay -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="osm-toggle" checked> OpenStreetMap</label>
-            <button class="expand-btn open">&#9654;</button>
-        </div>
-        <div class="layer-body open">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="osm-opacity" min="0" max="100" value="0">
-                <span class="opacity-value" id="osm-opacity-val">0%</span>
-            </div>
-            <p class="layer-description">Labels, roads, borders, and geographic detail</p>
         </div>
     </div>
 
@@ -559,8 +657,15 @@
 <button id="toggle-controls" title="Show layer controls">&#9776;</button>
 
 <!-- Project info -->
-<div id="info-badge">
-    <a href="https://github.com/jorgemelis/physicalearth" target="_blank">PhysicalEarth</a> &mdash; open source physical atlas
+<div id="info-badge" onclick="this.classList.toggle('expanded')">
+    <div>
+        <span class="info-title">PhysicalEarth</span>
+        <span class="info-tagline">&mdash; a free physical atlas</span>
+    </div>
+    <div class="info-detail">
+        <p>GPU-rendered hypsometric relief, hillshading, and bathymetry &mdash; the kind of physical map that used to live only in printed atlases.</p>
+        <p>Open source and open data. Missing your region's geology, a river, or a mountain range? <a class="gh-link" href="https://github.com/jorgemelis/physicalearth" target="_blank"><svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Contribute on GitHub</a></p>
+    </div>
 </div>
 
 <!-- Coordinates -->
@@ -586,6 +691,12 @@
         osm: {
             url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxzoom: 19
+        },
+        // Esri World Imagery (satellite)
+        satellite: {
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attribution: 'Imagery: <a href="https://www.esri.com">Esri</a>, Maxar, Earthstar Geographics',
             maxzoom: 19
         },
         // EMODnet Bathymetry (pre-rendered ocean depth)
@@ -733,6 +844,26 @@
                 'hillshade-highlight-color': 'rgba(255, 255, 255, 0.35)',
                 'hillshade-accent-color': 'rgba(0, 0, 0, 0.1)'
             }
+        });
+
+        // --- REFERENCE LAYERS (satellite + OSM, for orientation) ---
+        // These sit on top of the relief (hypso + bathy + hillshade)
+        // and are controlled by a single selector with shared opacity.
+
+        map.addSource('satellite-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.satellite.url],
+            tileSize: 256,
+            maxzoom: SOURCES.satellite.maxzoom,
+            attribution: SOURCES.satellite.attribution
+        });
+
+        map.addLayer({
+            id: 'satellite-layer',
+            type: 'raster',
+            source: 'satellite-tiles',
+            paint: { 'raster-opacity': 0 },
+            layout: { 'visibility': 'none' }
         });
 
         // --- OSM OVERLAY ---
@@ -1161,7 +1292,7 @@
         setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
         setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
-        setupLayerControl('osm-layer', 'osm-toggle', 'osm-opacity', 'osm-opacity-val');
+        // (OSM is now controlled by the reference layer selector below)
         // Rivers: toggle controls both line + label layers, opacity controls line
         (function() {
             var toggle = document.getElementById('rivers-toggle');
@@ -1267,6 +1398,59 @@
             });
         })();
         setupLayerControl('geol-pt-layer', 'geol-pt-toggle', 'geol-pt-opacity', 'geol-pt-opacity-val');
+
+        // =========================================================
+        // REFERENCE LAYER SELECTOR (None / Satellite / OSM)
+        // The relief (hypso + bathy + hillshade) is always the
+        // foundation. Reference layers overlay on top for orientation.
+        // =========================================================
+
+        var refBtns = {
+            satellite: document.getElementById('ref-satellite'),
+            osm: document.getElementById('ref-osm')
+        };
+        var refSlider = document.getElementById('ref-opacity');
+        var refValueDisplay = document.getElementById('ref-opacity-val');
+        var currentRef = 'osm'; // 'satellite' or 'osm'
+
+        var refLayerMap = {
+            satellite: 'satellite-layer',
+            osm: 'osm-layer'
+        };
+
+        function setReferenceLayer(mode) {
+            // Hide previous reference layer
+            map.setLayoutProperty(refLayerMap[currentRef], 'visibility', 'none');
+            map.setPaintProperty(refLayerMap[currentRef], 'raster-opacity', 0);
+
+            // Update button states
+            Object.keys(refBtns).forEach(function(key) {
+                refBtns[key].classList.toggle('active', key === mode);
+            });
+
+            currentRef = mode;
+
+            // Show selected reference layer with current slider opacity
+            var opacity = parseInt(refSlider.value) / 100;
+            map.setLayoutProperty(refLayerMap[mode], 'visibility', 'visible');
+            map.setPaintProperty(refLayerMap[mode], 'raster-opacity', opacity);
+        }
+
+        // Initialize: show OSM at slider opacity
+        (function() {
+            var opacity = parseInt(refSlider.value) / 100;
+            map.setLayoutProperty('osm-layer', 'visibility', 'visible');
+            map.setPaintProperty('osm-layer', 'raster-opacity', opacity);
+        })();
+
+        refBtns.satellite.addEventListener('click', function() { setReferenceLayer('satellite'); });
+        refBtns.osm.addEventListener('click', function() { setReferenceLayer('osm'); });
+
+        refSlider.addEventListener('input', function() {
+            var opacity = parseInt(this.value) / 100;
+            refValueDisplay.textContent = this.value + '%';
+            map.setPaintProperty(refLayerMap[currentRef], 'raster-opacity', opacity);
+        });
 
         // =========================================================
         // GEOLOGY IDENTIFY (click-to-identify)
