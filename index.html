@@ -759,11 +759,24 @@
         </div>
         <div class="layer-body">
             <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="hillshade-opacity" min="0" max="100" value="35">
-                <span class="opacity-value" id="hillshade-opacity-val">35%</span>
+                <span class="slider-label">Intensity</span>
+                <input type="range" id="hillshade-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="hillshade-opacity-val">50%</span>
             </div>
-            <p class="layer-description">3D terrain shading (illumination NW)</p>
+            <div style="margin: 6px 0 4px;">
+                <div style="font-size:11px; color:#888; margin-bottom:4px;">Method</div>
+                <div class="basemap-selector">
+                    <button class="basemap-btn" id="hs-method-standard">Standard</button>
+                    <button class="basemap-btn active" id="hs-method-multidirectional">Multi</button>
+                    <button class="basemap-btn" id="hs-method-igor">Igor</button>
+                </div>
+            </div>
+            <div class="slider-row">
+                <span class="slider-label">Direction</span>
+                <input type="range" id="hillshade-direction" min="0" max="359" value="315">
+                <span class="opacity-value" id="hillshade-direction-val">315°</span>
+            </div>
+            <p class="layer-description">Terrain shading. Multi &amp; Igor use multiple light sources for more natural relief</p>
         </div>
     </div>
 
@@ -1122,20 +1135,6 @@
             }
         });
 
-        // --- HILLSHADE LAYER ---
-        map.addLayer({
-            id: 'hillshade-layer',
-            type: 'hillshade',
-            source: 'terrain-dem',
-            paint: {
-                'hillshade-illumination-direction': 315,
-                'hillshade-exaggeration': 0.4,
-                'hillshade-shadow-color': 'rgba(0, 0, 0, 0.35)',
-                'hillshade-highlight-color': 'rgba(255, 255, 255, 0.35)',
-                'hillshade-accent-color': 'rgba(0, 0, 0, 0.1)'
-            }
-        });
-
         // --- CONTOUR LINES (generated client-side from DEM) ---
         var demSource = new mlcontour.DemSource({
             url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
@@ -1209,8 +1208,8 @@
         });
 
         // --- REFERENCE LAYERS (satellite + OSM, for orientation) ---
-        // These sit on top of the relief (hypso + bathy + hillshade)
-        // and are controlled by a single selector with shared opacity.
+        // These sit on top of hypso + bathy but BELOW hillshade,
+        // so hillshade shading is always visible (multiply-like effect).
 
         map.addSource('satellite-tiles', {
             type: 'raster',
@@ -1243,6 +1242,23 @@
             source: 'osm-tiles',
             paint: {
                 'raster-opacity': 0
+            }
+        });
+
+        // --- HILLSHADE LAYER ---
+        // Placed ABOVE reference layers so hillshade shading is visible
+        // even at 100% reference opacity (multiply-like effect).
+        map.addLayer({
+            id: 'hillshade-layer',
+            type: 'hillshade',
+            source: 'terrain-dem',
+            paint: {
+                'hillshade-method': 'multidirectional',
+                'hillshade-illumination-direction': 315,
+                'hillshade-exaggeration': 0.5,
+                'hillshade-shadow-color': 'rgba(30, 20, 40, 0.45)',
+                'hillshade-highlight-color': 'rgba(255, 250, 230, 0.3)',
+                'hillshade-accent-color': 'rgba(60, 40, 20, 0.15)'
             }
         });
 
@@ -1680,7 +1696,47 @@
 
         setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
         setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
-        setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
+        // Hillshade: custom control with method selector + direction
+        (function() {
+            var toggle = document.getElementById('hillshade-toggle');
+            var slider = document.getElementById('hillshade-opacity');
+            var valueDisplay = document.getElementById('hillshade-opacity-val');
+            var dirSlider = document.getElementById('hillshade-direction');
+            var dirDisplay = document.getElementById('hillshade-direction-val');
+
+            toggle.addEventListener('change', function() {
+                map.setLayoutProperty('hillshade-layer', 'visibility',
+                    this.checked ? 'visible' : 'none');
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('hillshade-layer', 'hillshade-exaggeration', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+
+            dirSlider.addEventListener('input', function() {
+                var dir = parseInt(this.value);
+                map.setPaintProperty('hillshade-layer', 'hillshade-illumination-direction', dir);
+                dirDisplay.textContent = dir + '\u00b0';
+            });
+
+            // Method selector
+            var methods = ['standard', 'multidirectional', 'igor'];
+            var methodBtns = {
+                standard: document.getElementById('hs-method-standard'),
+                multidirectional: document.getElementById('hs-method-multidirectional'),
+                igor: document.getElementById('hs-method-igor')
+            };
+
+            methods.forEach(function(method) {
+                methodBtns[method].addEventListener('click', function() {
+                    methods.forEach(function(m) { methodBtns[m].classList.remove('active'); });
+                    this.classList.add('active');
+                    map.setPaintProperty('hillshade-layer', 'hillshade-method', method);
+                });
+            });
+        })();
         // Contours: toggle controls both line + label layers
         (function() {
             var toggle = document.getElementById('contours-toggle');
@@ -1810,8 +1866,8 @@
 
         // =========================================================
         // REFERENCE LAYER SELECTOR (None / Satellite / OSM)
-        // The relief (hypso + bathy + hillshade) is always the
-        // foundation. Reference layers overlay on top for orientation.
+        // Hypso + bathy are the foundation. Reference layers sit on
+        // top, and hillshade overlays everything for terrain shading.
         // =========================================================
 
         var refBtns = {
@@ -2090,7 +2146,9 @@
                     z: parseFloat(map.getZoom().toFixed(2)),
                     ref: currentRef,
                     refOp: parseInt(refSlider.value),
-                    terrain: (document.getElementById('terrain-toggle').checked ? 1 : 0) + ',' + document.getElementById('terrain-exaggeration').value
+                    terrain: (document.getElementById('terrain-toggle').checked ? 1 : 0) + ',' + document.getElementById('terrain-exaggeration').value,
+                    hsMethod: document.querySelector('#hs-method-standard.active') ? 'standard' : document.querySelector('#hs-method-igor.active') ? 'igor' : 'multidirectional',
+                    hsDir: parseInt(document.getElementById('hillshade-direction').value)
                 };
                 layerControls.forEach(function(lc) {
                     var t = document.getElementById(lc.toggle);
@@ -2133,6 +2191,19 @@
                     }
                 }
 
+                // Hillshade method + direction
+                if (state.hsMethod) {
+                    var methodBtn = document.getElementById('hs-method-' + state.hsMethod);
+                    if (methodBtn && !methodBtn.classList.contains('active')) {
+                        methodBtn.click();
+                    }
+                }
+                if (state.hsDir !== undefined) {
+                    var dSlider = document.getElementById('hillshade-direction');
+                    dSlider.value = state.hsDir;
+                    dSlider.dispatchEvent(new Event('input'));
+                }
+
                 layerControls.forEach(function(lc) {
                     if (!state[lc.id]) return;
                     var parts = state[lc.id].split(',');
@@ -2160,6 +2231,8 @@
                 params.push('ref=' + state.ref);
                 params.push('refOp=' + state.refOp);
                 if (state.terrain) params.push('terrain=' + state.terrain);
+                if (state.hsMethod) params.push('hsMethod=' + state.hsMethod);
+                if (state.hsDir !== undefined) params.push('hsDir=' + state.hsDir);
                 layerControls.forEach(function(lc) {
                     if (state[lc.id]) params.push(lc.id + '=' + state[lc.id]);
                 });
@@ -2173,7 +2246,7 @@
                     var kv = pair.split('=');
                     if (kv.length === 2) {
                         var key = kv[0], val = kv[1];
-                        if (key === 'lat' || key === 'lng' || key === 'z' || key === 'refOp') {
+                        if (key === 'lat' || key === 'lng' || key === 'z' || key === 'refOp' || key === 'hsDir') {
                             state[key] = parseFloat(val);
                         } else {
                             state[key] = val;
