@@ -759,11 +759,11 @@
         </div>
         <div class="layer-body">
             <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="hillshade-opacity" min="0" max="100" value="35">
-                <span class="opacity-value" id="hillshade-opacity-val">35%</span>
+                <span class="slider-label">Intensity</span>
+                <input type="range" id="hillshade-opacity" min="0" max="100" value="50">
+                <span class="opacity-value" id="hillshade-opacity-val">50%</span>
             </div>
-            <p class="layer-description">3D terrain shading (illumination NW)</p>
+            <p class="layer-description">Terrain shading (illumination NW)</p>
         </div>
     </div>
 
@@ -1122,20 +1122,6 @@
             }
         });
 
-        // --- HILLSHADE LAYER ---
-        map.addLayer({
-            id: 'hillshade-layer',
-            type: 'hillshade',
-            source: 'terrain-dem',
-            paint: {
-                'hillshade-illumination-direction': 315,
-                'hillshade-exaggeration': 0.4,
-                'hillshade-shadow-color': 'rgba(0, 0, 0, 0.35)',
-                'hillshade-highlight-color': 'rgba(255, 255, 255, 0.35)',
-                'hillshade-accent-color': 'rgba(0, 0, 0, 0.1)'
-            }
-        });
-
         // --- CONTOUR LINES (generated client-side from DEM) ---
         var demSource = new mlcontour.DemSource({
             url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
@@ -1209,8 +1195,8 @@
         });
 
         // --- REFERENCE LAYERS (satellite + OSM, for orientation) ---
-        // These sit on top of the relief (hypso + bathy + hillshade)
-        // and are controlled by a single selector with shared opacity.
+        // These sit on top of hypso + bathy but BELOW hillshade,
+        // so hillshade shading is always visible (multiply-like effect).
 
         map.addSource('satellite-tiles', {
             type: 'raster',
@@ -1243,6 +1229,23 @@
             source: 'osm-tiles',
             paint: {
                 'raster-opacity': 0
+            }
+        });
+
+        // --- HILLSHADE LAYER ---
+        // Placed ABOVE reference layers so hillshade shading is visible
+        // even at 100% reference opacity (multiply-like effect).
+        map.addLayer({
+            id: 'hillshade-layer',
+            type: 'hillshade',
+            source: 'terrain-dem',
+            paint: {
+                'hillshade-method': 'standard',
+                'hillshade-illumination-direction': 315,
+                'hillshade-exaggeration': 0.5,
+                'hillshade-shadow-color': 'rgba(30, 20, 40, 0.45)',
+                'hillshade-highlight-color': 'rgba(255, 250, 230, 0.3)',
+                'hillshade-accent-color': 'rgba(60, 40, 20, 0.15)'
             }
         });
 
@@ -1810,8 +1813,8 @@
 
         // =========================================================
         // REFERENCE LAYER SELECTOR (None / Satellite / OSM)
-        // The relief (hypso + bathy + hillshade) is always the
-        // foundation. Reference layers overlay on top for orientation.
+        // Hypso + bathy are the foundation. Reference layers sit on
+        // top, and hillshade overlays everything for terrain shading.
         // =========================================================
 
         var refBtns = {
