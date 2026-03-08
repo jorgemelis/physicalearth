@@ -9,6 +9,7 @@
     <!-- MapLibre GL JS 5.19 (supports color-relief layer) -->
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.19.0/dist/maplibre-gl.css">
     <script src="https://unpkg.com/maplibre-gl@5.19.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/maplibre-contour@0.1.0/dist/index.min.js"></script>
 
     <style>
         * {
@@ -430,11 +431,40 @@
             color: #2d6a4f;
         }
 
+        /* Reset 2D button */
+        #reset-2d {
+            position: absolute;
+            top: 100px;
+            left: 10px;
+            z-index: 10;
+            width: 29px;
+            height: 29px;
+            background: #fff;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            color: #333;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reset-2d:hover {
+            background: #f0f0f0;
+        }
+
+        #reset-2d.visible {
+            display: flex;
+        }
+
         /* Search box */
         #search-box {
             position: absolute;
             top: 16px;
-            left: 16px;
+            left: 52px;
             z-index: 10;
             width: 300px;
         }
@@ -512,6 +542,124 @@
             margin-top: 1px;
         }
 
+        /* Saved Views */
+        .views-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .views-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .views-header-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .views-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .view-btn {
+            padding: 3px 8px;
+            border: 1.5px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover {
+            border-color: #2d6a4f;
+            color: #2d6a4f;
+        }
+
+        .views-list {
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .view-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+        }
+
+        .view-item:last-child {
+            border-bottom: none;
+        }
+
+        .view-item:hover .view-name {
+            color: #2d6a4f;
+        }
+
+        .view-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .view-delete {
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: #ccc;
+            cursor: pointer;
+            padding: 0 2px;
+            line-height: 1;
+        }
+
+        .view-delete:hover {
+            color: #c0392b;
+        }
+
+        .views-empty {
+            font-size: 11px;
+            color: #aaa;
+            font-style: italic;
+            padding: 4px 0;
+        }
+
+        .view-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(45, 106, 79, 0.95);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .view-toast.show {
+            opacity: 1;
+        }
+
         /* MapLibre overrides */
         .maplibregl-ctrl-attrib {
             font-size: 10px !important;
@@ -522,6 +670,9 @@
 <body>
 
 <div id="map"></div>
+
+<!-- Reset to 2D view -->
+<button id="reset-2d" title="Reset to 2D view">2D</button>
 
 <!-- Search -->
 <div id="search-box">
@@ -549,6 +700,22 @@
             <span class="slider-label">Opacity</span>
             <input type="range" id="ref-opacity" min="0" max="100" value="0">
             <span class="opacity-value" id="ref-opacity-val">0%</span>
+        </div>
+    </div>
+
+    <!-- 3D Terrain -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="terrain-toggle"> 3D Terrain</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Exagger.</span>
+                <input type="range" id="terrain-exaggeration" min="5" max="30" value="15">
+                <span class="opacity-value" id="terrain-exaggeration-val">1.5&times;</span>
+            </div>
+            <p class="layer-description">Vertical exaggeration of DEM elevation</p>
         </div>
     </div>
 
@@ -597,6 +764,22 @@
                 <span class="opacity-value" id="hillshade-opacity-val">35%</span>
             </div>
             <p class="layer-description">3D terrain shading (illumination NW)</p>
+        </div>
+    </div>
+
+    <!-- Contours -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="contours-toggle"> Contours</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Opacity</span>
+                <input type="range" id="contours-opacity" min="0" max="100" value="60">
+                <span class="opacity-value" id="contours-opacity-val">60%</span>
+            </div>
+            <p class="layer-description">Elevation contour lines from DEM data</p>
         </div>
     </div>
 
@@ -741,8 +924,24 @@
 
         </div>
     </div>
+    <!-- Saved Views -->
+    <div class="views-section" id="views-section">
+        <div class="views-header">
+            <span class="views-header-label">Saved Views</span>
+            <div class="views-actions">
+                <button class="view-btn" id="view-save" title="Save current view">Save</button>
+                <button class="view-btn" id="view-share" title="Copy shareable link">Share</button>
+            </div>
+        </div>
+        <div class="views-list" id="views-list">
+            <div class="views-empty" id="views-empty">No saved views yet</div>
+        </div>
+    </div>
+
     </div><!-- /layers-list -->
 </div>
+
+<div class="view-toast" id="view-toast"></div>
 
 <!-- Toggle button for collapsed state -->
 <button id="toggle-controls" title="Show layer controls">&#9776;</button>
@@ -934,6 +1133,78 @@
                 'hillshade-shadow-color': 'rgba(0, 0, 0, 0.35)',
                 'hillshade-highlight-color': 'rgba(255, 255, 255, 0.35)',
                 'hillshade-accent-color': 'rgba(0, 0, 0, 0.1)'
+            }
+        });
+
+        // --- CONTOUR LINES (generated client-side from DEM) ---
+        var demSource = new mlcontour.DemSource({
+            url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
+            encoding: 'terrarium',
+            maxzoom: 13,
+            worker: true,
+            cacheSize: 100,
+            timeoutMs: 10000
+        });
+        demSource.setupMaplibre(maplibregl);
+
+        map.addSource('contour-source', {
+            type: 'vector',
+            tiles: [demSource.contourProtocolUrl({
+                multiplier: 1,
+                thresholds: {
+                    // [minor, major] in meters
+                    8:  [500, 2500],
+                    10: [200, 1000],
+                    12: [100, 500],
+                    14: [50, 200],
+                    15: [20, 100]
+                },
+                contourLayer: 'contours',
+                elevationKey: 'ele',
+                levelKey: 'level',
+                extent: 4096,
+                buffer: 1
+            })],
+            maxzoom: 15
+        });
+
+        map.addLayer({
+            id: 'contour-lines',
+            type: 'line',
+            source: 'contour-source',
+            'source-layer': 'contours',
+            layout: {
+                'visibility': 'none',
+                'line-join': 'round'
+            },
+            paint: {
+                'line-color': '#7a6552',
+                'line-width': ['match', ['get', 'level'], 1, 1.5, 0.6],
+                'line-opacity': 0.6
+            }
+        });
+
+        map.addLayer({
+            id: 'contour-labels',
+            type: 'symbol',
+            source: 'contour-source',
+            'source-layer': 'contours',
+            filter: ['>', ['get', 'level'], 0],
+            layout: {
+                'visibility': 'none',
+                'symbol-placement': 'line',
+                'text-size': 9,
+                'text-field': ['concat', ['number-format', ['get', 'ele'], {}], ' m'],
+                'text-font': ['Noto Sans Regular'],
+                'text-max-angle': 25,
+                'text-padding': 5,
+                'symbol-spacing': 300
+            },
+            paint: {
+                'text-color': '#6b4c3b',
+                'text-halo-color': 'rgba(255, 255, 255, 0.8)',
+                'text-halo-width': 1,
+                'text-opacity': 0.6
             }
         });
 
@@ -1380,9 +1651,56 @@
             });
         }
 
+        // 3D Terrain: toggle + exaggeration slider
+        (function() {
+            var toggle = document.getElementById('terrain-toggle');
+            var slider = document.getElementById('terrain-exaggeration');
+            var valueDisplay = document.getElementById('terrain-exaggeration-val');
+
+            function getExaggeration() {
+                return parseInt(slider.value) / 10;
+            }
+
+            toggle.addEventListener('change', function() {
+                if (this.checked) {
+                    map.setTerrain({ source: 'terrain-dem', exaggeration: getExaggeration() });
+                } else {
+                    map.setTerrain(null);
+                }
+            });
+
+            slider.addEventListener('input', function() {
+                var val = getExaggeration();
+                valueDisplay.textContent = val.toFixed(1) + '\u00d7';
+                if (toggle.checked) {
+                    map.setTerrain({ source: 'terrain-dem', exaggeration: val });
+                }
+            });
+        })();
+
         setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
         setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
+        // Contours: toggle controls both line + label layers
+        (function() {
+            var toggle = document.getElementById('contours-toggle');
+            var slider = document.getElementById('contours-opacity');
+            var valueDisplay = document.getElementById('contours-opacity-val');
+
+            toggle.addEventListener('change', function() {
+                var vis = this.checked ? 'visible' : 'none';
+                map.setLayoutProperty('contour-lines', 'visibility', vis);
+                map.setLayoutProperty('contour-labels', 'visibility', vis);
+            });
+
+            slider.addEventListener('input', function() {
+                var opacity = parseInt(this.value) / 100;
+                map.setPaintProperty('contour-lines', 'line-opacity', opacity);
+                map.setPaintProperty('contour-labels', 'text-opacity', opacity);
+                valueDisplay.textContent = this.value + '%';
+            });
+        })();
+
         // (OSM is now controlled by the reference layer selector below)
         // Rivers: toggle controls both line + label layers, opacity controls line
         (function() {
@@ -1740,6 +2058,223 @@
                     .addTo(map);
             });
         });
+
+        // =========================================================
+        // SAVED VIEWS (localStorage + URL hash sharing)
+        // =========================================================
+        (function() {
+            var STORAGE_KEY = 'physicalearth_views';
+
+            var layerControls = [
+                { id: 'hypso', toggle: 'hypso-toggle', opacity: 'hypso-opacity' },
+                { id: 'bathy', toggle: 'bathy-toggle', opacity: 'bathy-opacity' },
+                { id: 'hillshade', toggle: 'hillshade-toggle', opacity: 'hillshade-opacity' },
+                { id: 'contours', toggle: 'contours-toggle', opacity: 'contours-opacity' },
+                { id: 'rivers', toggle: 'rivers-toggle', opacity: 'rivers-opacity' },
+                { id: 'minor-rivers', toggle: 'minor-rivers-toggle', opacity: 'minor-rivers-opacity' },
+                { id: 'countries', toggle: 'countries-toggle', opacity: 'countries-opacity' },
+                { id: 'atlas', toggle: 'atlas-toggle', opacity: 'atlas-opacity' },
+                { id: 'geol-es', toggle: 'geol-es-toggle', opacity: 'geol-es-opacity' },
+                { id: 'geol-fr', toggle: 'geol-fr-toggle', opacity: 'geol-fr-opacity' },
+                { id: 'geol-uk', toggle: 'geol-uk-toggle', opacity: 'geol-uk-opacity' },
+                { id: 'geol-ca', toggle: 'geol-ca-toggle', opacity: 'geol-ca-opacity' },
+                { id: 'geol-be', toggle: 'geol-be-toggle', opacity: 'geol-be-opacity' },
+                { id: 'geol-pt', toggle: 'geol-pt-toggle', opacity: 'geol-pt-opacity' }
+            ];
+
+            function getMapState() {
+                var center = map.getCenter();
+                var state = {
+                    lat: parseFloat(center.lat.toFixed(5)),
+                    lng: parseFloat(center.lng.toFixed(5)),
+                    z: parseFloat(map.getZoom().toFixed(2)),
+                    ref: currentRef,
+                    refOp: parseInt(refSlider.value),
+                    terrain: (document.getElementById('terrain-toggle').checked ? 1 : 0) + ',' + document.getElementById('terrain-exaggeration').value
+                };
+                layerControls.forEach(function(lc) {
+                    var t = document.getElementById(lc.toggle);
+                    var s = document.getElementById(lc.opacity);
+                    state[lc.id] = (t.checked ? 1 : 0) + ',' + s.value;
+                });
+                return state;
+            }
+
+            function applyMapState(state) {
+                if (state.lat !== undefined && state.lng !== undefined) {
+                    map.jumpTo({
+                        center: [state.lng, state.lat],
+                        zoom: state.z || 4
+                    });
+                }
+
+                if (state.ref) {
+                    setReferenceLayer(state.ref);
+                }
+                if (state.refOp !== undefined) {
+                    refSlider.value = state.refOp;
+                    refSlider.dispatchEvent(new Event('input'));
+                }
+
+                // 3D Terrain
+                if (state.terrain) {
+                    var tp = state.terrain.split(',');
+                    var tOn = tp[0] === '1';
+                    var tVal = parseInt(tp[1]);
+                    var tToggle = document.getElementById('terrain-toggle');
+                    var tSlider = document.getElementById('terrain-exaggeration');
+                    if (parseInt(tSlider.value) !== tVal) {
+                        tSlider.value = tVal;
+                        tSlider.dispatchEvent(new Event('input'));
+                    }
+                    if (tToggle.checked !== tOn) {
+                        tToggle.checked = tOn;
+                        tToggle.dispatchEvent(new Event('change'));
+                    }
+                }
+
+                layerControls.forEach(function(lc) {
+                    if (!state[lc.id]) return;
+                    var parts = state[lc.id].split(',');
+                    var on = parts[0] === '1';
+                    var opacity = parseInt(parts[1]);
+                    var toggle = document.getElementById(lc.toggle);
+                    var slider = document.getElementById(lc.opacity);
+
+                    if (toggle.checked !== on) {
+                        toggle.checked = on;
+                        toggle.dispatchEvent(new Event('change'));
+                    }
+                    if (parseInt(slider.value) !== opacity) {
+                        slider.value = opacity;
+                        slider.dispatchEvent(new Event('input'));
+                    }
+                });
+            }
+
+            function stateToHash(state) {
+                var params = [];
+                params.push('lat=' + state.lat);
+                params.push('lng=' + state.lng);
+                params.push('z=' + state.z);
+                params.push('ref=' + state.ref);
+                params.push('refOp=' + state.refOp);
+                if (state.terrain) params.push('terrain=' + state.terrain);
+                layerControls.forEach(function(lc) {
+                    if (state[lc.id]) params.push(lc.id + '=' + state[lc.id]);
+                });
+                return '#' + params.join('&');
+            }
+
+            function hashToState(hash) {
+                if (!hash || hash.length < 2) return null;
+                var state = {};
+                hash.substring(1).split('&').forEach(function(pair) {
+                    var kv = pair.split('=');
+                    if (kv.length === 2) {
+                        var key = kv[0], val = kv[1];
+                        if (key === 'lat' || key === 'lng' || key === 'z' || key === 'refOp') {
+                            state[key] = parseFloat(val);
+                        } else {
+                            state[key] = val;
+                        }
+                    }
+                });
+                return (state.lat !== undefined && state.lng !== undefined) ? state : null;
+            }
+
+            function getSavedViews() {
+                try {
+                    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function setSavedViews(views) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(views));
+            }
+
+            function showToast(msg) {
+                var toast = document.getElementById('view-toast');
+                toast.textContent = msg;
+                toast.classList.add('show');
+                setTimeout(function() { toast.classList.remove('show'); }, 2000);
+            }
+
+            function renderViewsList() {
+                var views = getSavedViews();
+                var list = document.getElementById('views-list');
+                var empty = document.getElementById('views-empty');
+
+                list.querySelectorAll('.view-item').forEach(function(el) { el.remove(); });
+
+                if (!views.length) {
+                    empty.style.display = 'block';
+                    return;
+                }
+                empty.style.display = 'none';
+
+                views.forEach(function(view, idx) {
+                    var item = document.createElement('div');
+                    item.className = 'view-item';
+                    var nameSpan = document.createElement('span');
+                    nameSpan.className = 'view-name';
+                    nameSpan.textContent = view.name;
+                    var delBtn = document.createElement('button');
+                    delBtn.className = 'view-delete';
+                    delBtn.title = 'Delete';
+                    delBtn.innerHTML = '&times;';
+                    item.appendChild(nameSpan);
+                    item.appendChild(delBtn);
+
+                    nameSpan.addEventListener('click', function() {
+                        applyMapState(view.state);
+                        showToast('Loaded: ' + view.name);
+                    });
+
+                    delBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var v = getSavedViews();
+                        v.splice(idx, 1);
+                        setSavedViews(v);
+                        renderViewsList();
+                    });
+
+                    list.appendChild(item);
+                });
+            }
+
+            document.getElementById('view-save').addEventListener('click', function() {
+                var name = prompt('Name for this view:');
+                if (!name || !name.trim()) return;
+                var views = getSavedViews();
+                views.push({ name: name.trim(), state: getMapState() });
+                setSavedViews(views);
+                renderViewsList();
+                showToast('View saved');
+            });
+
+            document.getElementById('view-share').addEventListener('click', function() {
+                var state = getMapState();
+                var url = window.location.origin + window.location.pathname + stateToHash(state);
+                navigator.clipboard.writeText(url).then(function() {
+                    showToast('Link copied to clipboard');
+                }).catch(function() {
+                    prompt('Copy this link:', url);
+                });
+            });
+
+            // Restore from URL hash if present
+            var hashState = hashToState(window.location.hash);
+            if (hashState) {
+                applyMapState(hashState);
+                history.replaceState(null, '', window.location.pathname);
+            }
+
+            renderViewsList();
+        })();
+
     });
 
     // =========================================================
@@ -1807,6 +2342,23 @@
             document.getElementById('coord-text').textContent = coordText + '  ' + elev + ' m';
         });
     });
+
+    // =========================================================
+    // RESET TO 2D VIEW
+    // =========================================================
+    (function() {
+        var btn = document.getElementById('reset-2d');
+        function updateVisibility() {
+            var tilted = map.getPitch() > 1 || Math.abs(map.getBearing()) > 1;
+            btn.classList.toggle('visible', tilted);
+        }
+        map.on('pitchend', updateVisibility);
+        map.on('rotateend', updateVisibility);
+        map.on('moveend', updateVisibility);
+        btn.addEventListener('click', function() {
+            map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
+        });
+    })();
 
     // =========================================================
     // PANEL TOGGLE (for mobile / small screens)
