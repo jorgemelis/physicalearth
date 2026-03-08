@@ -2,6 +2,10 @@
 
 **The interactive physical atlas the internet is missing.**
 
+[**Try it live**](https://jorgemelis.github.io/physicalearth/)
+
+![PhysicalEarth screenshot](images/physicalearth-screenshot.png)
+
 Google Maps tells you where the nearest pizza place is. PhysicalEarth tells you *why the world looks the way it does*.
 
 PhysicalEarth is an open-source interactive map viewer that combines hypsometric relief (elevation-based coloring), shaded terrain, ocean bathymetry, geological overlays, and OpenStreetMap detail — the kind of physical geography map you remember from a good school atlas, but zoomable, layered, and alive.
@@ -33,8 +37,6 @@ That map doesn't exist online. The data to build it is freely available. The ren
 ## Quick start
 
 Just open `index.html` in your browser. No build step, no dependencies to install, no server required.
-
-Or visit the live version at [GitHub Pages](https://jorgemelis.github.io/physicalearth/).
 
 ## Technology
 
