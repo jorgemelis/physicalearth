@@ -20,7 +20,7 @@ Everything lives in `index.html` (~800 lines):
 - **WMS layers** for geology via `addGeologyWMS()` helper function
 - **GeoJSON rivers** from Natural Earth 10m with zoom-dependent filtering
 - **Glyphs**: `https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf` (Noto Sans Regular/Medium/Italic)
-- Layer order: hypsometric → bathymetry → hillshade → satellite → OSM → geology → rivers (line + label)
+- Layer order: hypsometric → bathymetry → satellite → OSM → hillshade → geology → rivers (line + label)
 - Default view: Europe centered [10, 40], zoom 4
 
 ## Default Layer State
@@ -28,7 +28,7 @@ Everything lives in `index.html` (~800 lines):
 |-------|--------|---------|
 | Hypsometric Tints | ON | 100% |
 | Bathymetry | ON | 100% |
-| Hillshade | ON | 35% |
+| Hillshade | ON | 50% (standard) |
 | Reference layer (Satellite/OSM) | OSM selected | 0% |
 | Rivers | ON | 100% |
 | Minor Rivers | OFF | 100% |
