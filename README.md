@@ -1,25 +1,15 @@
 # PhysicalEarth
 
-**The interactive physical atlas the internet is missing.**
+An interactive physical geography map — hypsometric relief, hillshade, bathymetry, geological overlays, and rivers in a single-file web app.
 
 [**Try it live**](https://jorgemelis.github.io/physicalearth/)
 
 ![PhysicalEarth screenshot](images/physicalearth-screenshot.png)
 
-Google Maps tells you where the nearest pizza place is. PhysicalEarth tells you *why the world looks the way it does*.
-
-PhysicalEarth is an open-source interactive map viewer that combines hypsometric relief (elevation-based coloring), shaded terrain, ocean bathymetry, geological overlays, and OpenStreetMap detail — the kind of physical geography map you remember from a good school atlas, but zoomable, layered, and alive.
-
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
-## Why?
-
-Every digital map today is optimized for navigation: finding addresses, calculating routes, locating businesses. But the classic physical atlas — with its green lowlands fading to brown highlands, blue ocean depths, and prominent rivers — served a completely different purpose: **understanding geography**.
-
-Why do countries have the borders they have? Why did trade routes go where they went? Why do 3 billion people depend on Himalayan glaciers? A good physical map answers these questions at a glance.
-
-That map doesn't exist online. The data to build it is freely available. The rendering technology is mature. PhysicalEarth brings it all together.
+Most online maps are built for navigation. PhysicalEarth is a classic physical atlas — the kind with green lowlands, brown highlands, and blue ocean depths — rendered in the browser with MapLibre GL JS.
 
 ## What it does
 
@@ -36,7 +26,7 @@ That map doesn't exist online. The data to build it is freely available. The ren
 
 ## Quick start
 
-Just open `index.html` in your browser. No build step, no dependencies to install, no server required.
+Open `index.html` in your browser. No build required.
 
 ## Technology
 
@@ -46,20 +36,21 @@ Just open `index.html` in your browser. No build step, no dependencies to instal
 
 ## Data sources and attribution
 
-| Source | Data | License |
-|--------|------|---------|
-| [Mapterhorn](https://mapterhorn.com/) | DEM elevation tiles (Terrarium encoding) | Free |
-| [EMODnet](https://emodnet.ec.europa.eu/) | Bathymetry (ocean depth) | Free with attribution |
-| [OpenStreetMap](https://www.openstreetmap.org/) | Base map tiles | ODbL |
-| [IGME](https://www.igme.es/) | Geological cartography of Spain (1:1M) | Free with attribution |
-| [BRGM](https://www.brgm.fr/) | Geological cartography of France (1:1M) | Free with attribution |
-| [BGS/UKRI](https://www.bgs.ac.uk/) | Bedrock geology of the UK (625K) | Free with attribution |
-| [NRCan](https://natural-resources.canada.ca/) | Geological compilation of Canada | Free with attribution |
-| [Natural Earth](https://www.naturalearthdata.com/) | Rivers (10m) | Public domain |
+| Source                                             | Data                                     | License               |
+| -------------------------------------------------- | ---------------------------------------- | --------------------- |
+| [Mapterhorn](https://mapterhorn.com/)              | DEM elevation tiles (Terrarium encoding) | Free                  |
+| [EMODnet](https://emodnet.ec.europa.eu/)           | Bathymetry (ocean depth)                 | Free with attribution |
+| [OpenStreetMap](https://www.openstreetmap.org/)    | Base map tiles                           | ODbL                  |
+| [IGME](https://www.igme.es/)                       | Geological cartography of Spain (1:1M)   | Free with attribution |
+| [BRGM](https://www.brgm.fr/)                       | Geological cartography of France (1:1M)  | Free with attribution |
+| [BGS/UKRI](https://www.bgs.ac.uk/)                 | Bedrock geology of the UK (625K)         | Free with attribution |
+| [NRCan](https://natural-resources.canada.ca/)      | Geological compilation of Canada         | Free with attribution |
+| [Natural Earth](https://www.naturalearthdata.com/) | Rivers (10m)                             | Public domain         |
 
 ## Roadmap
 
 ### Done
+
 - [x] MapLibre GL JS viewer with GPU-rendered hypsometric tints
 - [x] 18-point color ramp (ocean depths to alpine peaks)
 - [x] Hillshade with adjustable exaggeration
@@ -73,6 +64,7 @@ Just open `index.html` in your browser. No build step, no dependencies to instal
 - [x] GitHub Pages deployment
 
 ### Planned
+
 - [ ] Geological legends (WMS GetLegendGraphic)
 - [ ] Additional geological surveys (Germany, Italy, USGS, OneGeology)
 - [ ] Tectonic plate boundaries
@@ -86,19 +78,16 @@ Just open `index.html` in your browser. No build step, no dependencies to instal
 
 We'd love your help! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-Whether you're a cartographer, a GIS developer, a designer, or just someone who loves maps — there's something here for you. Check the Issues tab for tasks labeled `good first issue`.
+Help especially welcome with:
 
-**Particularly wanted:**
-- Cartographic designers who can improve the hypsometric color ramp
-- GIS developers familiar with MapLibre styling
-- Anyone who can help integrate WMS services from additional national geological surveys
+- Improving the hypsometric color ramp
+- Integrating WMS services from additional national geological surveys
+- MapLibre styling
 - Feedback on what layers and features would be most useful
 
-## Philosophy
+## Credits
 
-This project is inspired by the work of [Tom Patterson](https://www.shadedrelief.com/) (US National Park Service, retired), whose maps demonstrate that digital cartography can match the beauty and clarity of the best hand-drawn atlases. His [Natural Earth](https://www.naturalearthdata.com/) dataset and cross-blended hypsometric tints are foundational to this project.
-
-The goal is not to replace Google Maps or OpenStreetMap. It's to build the atlas that sits *on top* of them — the layer that turns geographic data into geographic understanding.
+Inspired by [Tom Patterson](https://www.shadedrelief.com/)'s cartographic work (US National Park Service, retired). His [Natural Earth](https://www.naturalearthdata.com/) dataset and cross-blended hypsometric tints are foundational to this project.
 
 ## License
 
