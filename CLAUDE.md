@@ -4,7 +4,11 @@
 GPU-rendered interactive hypsometric atlas. Single-file web app (`index.html`) using MapLibre GL JS 5.19. No build tools, no frameworks, no npm.
 
 ## Conceptual Model
-The **relief** is this project's core contribution — hypsometric tints, bathymetry, and hillshade are always present as the foundation. On top of the relief, users can optionally enable a **reference layer** (Satellite or OpenStreetMap) for orientation or educational purposes. All other overlays (rivers, geology, atlas labels) sit on top of everything.
+Layers are organized into 4 groups:
+1. **Base Map** (mutually exclusive dropdown): Physical Relief (EMODnet), Hypsometric Tints (DEM color-relief), Satellite (Esri), OpenStreetMap — only one visible at a time
+2. **Terrain Effects** (checkboxes): Hillshade, Contours, 3D Terrain — apply on top of any base
+3. **Overlays** (checkboxes): Rivers, Minor Rivers, Countries, Atlas Labels
+4. **Geology** (grouped checkboxes): National geological survey WMS layers
 
 ## Architecture
 Everything lives in `index.html` (~800 lines):
@@ -16,29 +20,31 @@ Everything lives in `index.html` (~800 lines):
 - **MapLibre GL JS 5.19** loaded from CDN (unpkg)
 - **color-relief** layer type for hypsometric tints (GPU-rendered)
 - **Terrarium encoding** DEM tiles from Mapterhorn (512px)
-- **Reference layers**: Esri World Imagery (satellite) and OpenStreetMap, controlled by a unified selector with shared opacity
+- **Base map layers** (mutually exclusive): EMODnet relief, hypsometric (DEM color-relief), Esri satellite, OpenStreetMap — controlled by `<select>` dropdown with shared opacity slider
 - **WMS layers** for geology via `addGeologyWMS()` helper function
 - **GeoJSON rivers** from Natural Earth 10m with zoom-dependent filtering
 - **Glyphs**: `https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf` (Noto Sans Regular/Medium/Italic)
-- Layer order: hypsometric → bathymetry → satellite → OSM → hillshade → geology → rivers (line + label)
+- Layer order: hypso → bathy → satellite → OSM → hillshade → contours → minor rivers → atlas labels → countries → geology → rivers
 - Default view: Europe centered [10, 40], zoom 4
 
 ## Default Layer State
 | Layer | ON/OFF | Opacity |
 |-------|--------|---------|
-| Hypsometric Tints | ON | 100% |
-| Bathymetry | ON | 100% |
-| Hillshade | ON | 50% (standard) |
-| Reference layer (Satellite/OSM) | OSM selected | 0% |
+| Base Map | Physical Relief | 100% |
+| Hillshade | ON | 50% |
+| Contours | OFF | 60% |
+| 3D Terrain | OFF | 1.5x |
 | Rivers | ON | 100% |
 | Minor Rivers | OFF | 100% |
+| Countries | OFF | 100% |
 | Atlas Labels | OFF | 100% |
 | Geology (all) | OFF | 50% |
 
 ## UI Details
 - Panel opens expanded by default
-- Reference layer selector (Satellite / OSM) at top of layers list with shared opacity slider (always visible); opacity 0% effectively hides the reference layer, so no "None" button is needed
-- Geology layers grouped under single "Geology" heading with individual country toggles
+- Base Map dropdown at top with shared opacity slider
+- Section headers: "Terrain Effects", "Overlays", "Geology"
+- Geology layers grouped under "National Surveys" with individual country toggles
 - Rivers toggle controls both line and label layers simultaneously
 
 ## Data Sources
