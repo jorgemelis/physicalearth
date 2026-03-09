@@ -385,7 +385,7 @@
             font-family: 'SF Mono', 'Fira Code', monospace;
         }
 
-        /* Reference layer selector */
+        /* Base map selector */
         .basemap-selector-group {
             margin-bottom: 8px;
             padding-bottom: 8px;
@@ -401,34 +401,49 @@
             margin-bottom: 6px;
         }
 
-        .basemap-selector {
-            display: flex;
-            gap: 5px;
-        }
-
-        .basemap-btn {
-            flex: 1;
+        .basemap-select {
+            width: 100%;
             padding: 6px 10px;
             border: 1.5px solid #ddd;
             border-radius: 8px;
             background: #fff;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
-            color: #666;
+            color: #333;
             cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease;
-            user-select: none;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 28px;
         }
 
-        .basemap-btn:hover {
+        .basemap-select:hover {
             border-color: #aaa;
         }
 
-        .basemap-btn.active {
+        .basemap-select:focus {
             border-color: #2d6a4f;
-            background: #edf5f0;
-            color: #2d6a4f;
+        }
+
+        /* Section headers */
+        .section-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 10px 0 4px;
+            padding-top: 6px;
+            border-top: 1px solid #eee;
+        }
+
+        .section-header:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
         }
 
         /* Reset 2D button */
@@ -689,67 +704,24 @@
     <p class="subtitle" id="panel-subtitle">The atlas the internet is missing</p>
 
     <div id="layers-list" class="open">
-    <!-- Reference Layer selector (orientation overlay on top of relief) -->
+    <!-- Base Map selector -->
     <div class="basemap-selector-group">
-        <div class="basemap-selector-label">Reference layer</div>
-        <div class="basemap-selector">
-            <button class="basemap-btn" id="ref-satellite">Satellite</button>
-            <button class="basemap-btn active" id="ref-osm">OSM</button>
-        </div>
+        <div class="basemap-selector-label">Base Map</div>
+        <select class="basemap-select" id="basemap-select">
+            <option value="relief" selected>Physical Relief</option>
+            <option value="hypsometric">Hypsometric Tints</option>
+            <option value="satellite">Satellite</option>
+            <option value="osm">OpenStreetMap</option>
+        </select>
         <div class="slider-row" style="margin-top:6px;">
             <span class="slider-label">Opacity</span>
-            <input type="range" id="ref-opacity" min="0" max="100" value="0">
-            <span class="opacity-value" id="ref-opacity-val">0%</span>
+            <input type="range" id="basemap-opacity" min="0" max="100" value="100">
+            <span class="opacity-value" id="basemap-opacity-val">100%</span>
         </div>
     </div>
 
-    <!-- 3D Terrain -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="terrain-toggle"> 3D Terrain</label>
-            <button class="expand-btn">&#9654;</button>
-        </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Exagger.</span>
-                <input type="range" id="terrain-exaggeration" min="5" max="30" value="15">
-                <span class="opacity-value" id="terrain-exaggeration-val">1.5&times;</span>
-            </div>
-            <p class="layer-description">Vertical exaggeration of DEM elevation</p>
-        </div>
-    </div>
-
-    <!-- Hypsometric Tints -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="hypso-toggle" checked> Hypsometric Tints</label>
-            <button class="expand-btn">&#9654;</button>
-        </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="hypso-opacity" min="0" max="100" value="100">
-                <span class="opacity-value" id="hypso-opacity-val">100%</span>
-            </div>
-            <p class="layer-description">Elevation-based atlas coloring from DEM data</p>
-        </div>
-    </div>
-
-    <!-- Bathymetry -->
-    <div class="layer-group">
-        <div class="layer-header">
-            <label><input type="checkbox" id="bathy-toggle" checked> Bathymetry</label>
-            <button class="expand-btn">&#9654;</button>
-        </div>
-        <div class="layer-body">
-            <div class="slider-row">
-                <span class="slider-label">Opacity</span>
-                <input type="range" id="bathy-opacity" min="0" max="100" value="100">
-                <span class="opacity-value" id="bathy-opacity-val">100%</span>
-            </div>
-            <p class="layer-description">Ocean depth. Data: <a href="https://emodnet.ec.europa.eu" style="color:#2d6a4f">EMODnet</a></p>
-        </div>
-    </div>
+    <!-- TERRAIN EFFECTS -->
+    <div class="section-header">Terrain Effects</div>
 
     <!-- Hillshade -->
     <div class="layer-group">
@@ -782,6 +754,25 @@
             <p class="layer-description">Elevation contour lines from DEM data</p>
         </div>
     </div>
+
+    <!-- 3D Terrain -->
+    <div class="layer-group">
+        <div class="layer-header">
+            <label><input type="checkbox" id="terrain-toggle"> 3D Terrain</label>
+            <button class="expand-btn">&#9654;</button>
+        </div>
+        <div class="layer-body">
+            <div class="slider-row">
+                <span class="slider-label">Exagger.</span>
+                <input type="range" id="terrain-exaggeration" min="5" max="30" value="15">
+                <span class="opacity-value" id="terrain-exaggeration-val">1.5&times;</span>
+            </div>
+            <p class="layer-description">Vertical exaggeration of DEM elevation</p>
+        </div>
+    </div>
+
+    <!-- OVERLAYS -->
+    <div class="section-header">Overlays</div>
 
     <!-- Rivers -->
     <div class="layer-group">
@@ -848,9 +839,10 @@
     </div>
 
     <!-- Geology group -->
+    <div class="section-header">Geology</div>
     <div class="layer-group">
         <div class="layer-header">
-            <label style="font-weight:700; color:#555; cursor:default;">Geology</label>
+            <label style="font-weight:700; color:#555; cursor:default;">National Surveys</label>
             <button class="expand-btn">&#9654;</button>
         </div>
         <div class="layer-body geol-group-body">
@@ -1094,17 +1086,20 @@
             attribution: SOURCES.dem.attribution
         });
 
-        // --- HYPSOMETRIC COLOR LAYER ---
+        // --- BASE MAP LAYERS (mutually exclusive) ---
+        // Order: hypso → bathy (relief) → satellite → osm → hillshade
+        // Only one base is visible at a time; hillshade sits on top of all bases.
+
         map.addLayer({
             id: 'hypso-layer',
             type: 'color-relief',
             source: 'terrain-dem',
+            layout: { 'visibility': 'none' },
             paint: {
                 'color-relief-color': HYPSO_COLOR_RAMP
             }
         });
 
-        // --- BATHYMETRY LAYER (between hypso and hillshade) ---
         map.addSource('bathy-tiles', {
             type: 'raster',
             tiles: [SOURCES.bathymetry.url],
@@ -1122,6 +1117,52 @@
             }
         });
 
+        map.addSource('satellite-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.satellite.url],
+            tileSize: 256,
+            maxzoom: SOURCES.satellite.maxzoom,
+            attribution: SOURCES.satellite.attribution
+        });
+
+        map.addLayer({
+            id: 'satellite-layer',
+            type: 'raster',
+            source: 'satellite-tiles',
+            paint: { 'raster-opacity': 1.0 },
+            layout: { 'visibility': 'none' }
+        });
+
+        map.addSource('osm-tiles', {
+            type: 'raster',
+            tiles: [SOURCES.osm.url],
+            tileSize: 256,
+            maxzoom: SOURCES.osm.maxzoom,
+            attribution: SOURCES.osm.attribution
+        });
+
+        map.addLayer({
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            paint: { 'raster-opacity': 1.0 },
+            layout: { 'visibility': 'none' }
+        });
+
+        // --- HILLSHADE LAYER (terrain effect, on top of any base) ---
+        map.addLayer({
+            id: 'hillshade-layer',
+            type: 'hillshade',
+            source: 'terrain-dem',
+            paint: {
+                'hillshade-method': 'standard',
+                'hillshade-illumination-direction': 315,
+                'hillshade-exaggeration': 0.5,
+                'hillshade-shadow-color': 'rgba(30, 20, 40, 0.45)',
+                'hillshade-highlight-color': 'rgba(255, 250, 230, 0.3)',
+                'hillshade-accent-color': 'rgba(60, 40, 20, 0.15)'
+            }
+        });
         // --- CONTOUR LINES (generated client-side from DEM) ---
         var demSource = new mlcontour.DemSource({
             url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp',
@@ -1194,60 +1235,7 @@
             }
         });
 
-        // --- REFERENCE LAYERS (satellite + OSM, for orientation) ---
-        // These sit on top of hypso + bathy but BELOW hillshade,
-        // so hillshade shading is always visible (multiply-like effect).
-
-        map.addSource('satellite-tiles', {
-            type: 'raster',
-            tiles: [SOURCES.satellite.url],
-            tileSize: 256,
-            maxzoom: SOURCES.satellite.maxzoom,
-            attribution: SOURCES.satellite.attribution
-        });
-
-        map.addLayer({
-            id: 'satellite-layer',
-            type: 'raster',
-            source: 'satellite-tiles',
-            paint: { 'raster-opacity': 0 },
-            layout: { 'visibility': 'none' }
-        });
-
-        // --- OSM OVERLAY ---
-        map.addSource('osm-tiles', {
-            type: 'raster',
-            tiles: [SOURCES.osm.url],
-            tileSize: 256,
-            maxzoom: SOURCES.osm.maxzoom,
-            attribution: SOURCES.osm.attribution
-        });
-
-        map.addLayer({
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-            paint: {
-                'raster-opacity': 0
-            }
-        });
-
-        // --- HILLSHADE LAYER ---
-        // Placed ABOVE reference layers so hillshade shading is visible
-        // even at 100% reference opacity (multiply-like effect).
-        map.addLayer({
-            id: 'hillshade-layer',
-            type: 'hillshade',
-            source: 'terrain-dem',
-            paint: {
-                'hillshade-method': 'standard',
-                'hillshade-illumination-direction': 315,
-                'hillshade-exaggeration': 0.5,
-                'hillshade-shadow-color': 'rgba(30, 20, 40, 0.45)',
-                'hillshade-highlight-color': 'rgba(255, 250, 230, 0.3)',
-                'hillshade-accent-color': 'rgba(60, 40, 20, 0.15)'
-            }
-        });
+        // (Satellite, OSM, and hillshade layers are now added above with the base map layers)
 
         // --- MINOR RIVERS (OpenFreeMap vector tiles) ---
         map.addSource('ofm', {
@@ -1681,8 +1669,43 @@
             });
         })();
 
-        setupLayerControl('hypso-layer', 'hypso-toggle', 'hypso-opacity', 'hypso-opacity-val', 'color-relief-opacity');
-        setupLayerControl('bathy-layer', 'bathy-toggle', 'bathy-opacity', 'bathy-opacity-val');
+        // --- BASE MAP SELECTOR ---
+        var basemapSelect = document.getElementById('basemap-select');
+        var basemapSlider = document.getElementById('basemap-opacity');
+        var basemapValueDisplay = document.getElementById('basemap-opacity-val');
+        var currentBasemap = 'relief';
+
+        var basemapLayers = {
+            relief: { id: 'bathy-layer', prop: 'raster-opacity' },
+            hypsometric: { id: 'hypso-layer', prop: 'color-relief-opacity' },
+            satellite: { id: 'satellite-layer', prop: 'raster-opacity' },
+            osm: { id: 'osm-layer', prop: 'raster-opacity' }
+        };
+
+        function setBasemap(mode) {
+            // Hide all base layers
+            Object.keys(basemapLayers).forEach(function(key) {
+                map.setLayoutProperty(basemapLayers[key].id, 'visibility', 'none');
+            });
+            currentBasemap = mode;
+            // Show selected base layer with current opacity
+            var layer = basemapLayers[mode];
+            var opacity = parseInt(basemapSlider.value) / 100;
+            map.setLayoutProperty(layer.id, 'visibility', 'visible');
+            map.setPaintProperty(layer.id, layer.prop, opacity);
+        }
+
+        basemapSelect.addEventListener('change', function() {
+            setBasemap(this.value);
+        });
+
+        basemapSlider.addEventListener('input', function() {
+            var opacity = parseInt(this.value) / 100;
+            basemapValueDisplay.textContent = this.value + '%';
+            var layer = basemapLayers[currentBasemap];
+            map.setPaintProperty(layer.id, layer.prop, opacity);
+        });
+
         setupLayerControl('hillshade-layer', 'hillshade-toggle', 'hillshade-opacity', 'hillshade-opacity-val', 'hillshade-exaggeration');
         // Contours: toggle controls both line + label layers
         (function() {
@@ -1704,7 +1727,6 @@
             });
         })();
 
-        // (OSM is now controlled by the reference layer selector below)
         // Rivers: toggle controls both line + label layers, opacity controls line
         (function() {
             var toggle = document.getElementById('rivers-toggle');
@@ -1811,58 +1833,7 @@
         })();
         setupLayerControl('geol-pt-layer', 'geol-pt-toggle', 'geol-pt-opacity', 'geol-pt-opacity-val');
 
-        // =========================================================
-        // REFERENCE LAYER SELECTOR (None / Satellite / OSM)
-        // Hypso + bathy are the foundation. Reference layers sit on
-        // top, and hillshade overlays everything for terrain shading.
-        // =========================================================
-
-        var refBtns = {
-            satellite: document.getElementById('ref-satellite'),
-            osm: document.getElementById('ref-osm')
-        };
-        var refSlider = document.getElementById('ref-opacity');
-        var refValueDisplay = document.getElementById('ref-opacity-val');
-        var currentRef = 'osm'; // 'satellite' or 'osm'
-
-        var refLayerMap = {
-            satellite: 'satellite-layer',
-            osm: 'osm-layer'
-        };
-
-        function setReferenceLayer(mode) {
-            // Hide previous reference layer
-            map.setLayoutProperty(refLayerMap[currentRef], 'visibility', 'none');
-            map.setPaintProperty(refLayerMap[currentRef], 'raster-opacity', 0);
-
-            // Update button states
-            Object.keys(refBtns).forEach(function(key) {
-                refBtns[key].classList.toggle('active', key === mode);
-            });
-
-            currentRef = mode;
-
-            // Show selected reference layer with current slider opacity
-            var opacity = parseInt(refSlider.value) / 100;
-            map.setLayoutProperty(refLayerMap[mode], 'visibility', 'visible');
-            map.setPaintProperty(refLayerMap[mode], 'raster-opacity', opacity);
-        }
-
-        // Initialize: show OSM at slider opacity
-        (function() {
-            var opacity = parseInt(refSlider.value) / 100;
-            map.setLayoutProperty('osm-layer', 'visibility', 'visible');
-            map.setPaintProperty('osm-layer', 'raster-opacity', opacity);
-        })();
-
-        refBtns.satellite.addEventListener('click', function() { setReferenceLayer('satellite'); });
-        refBtns.osm.addEventListener('click', function() { setReferenceLayer('osm'); });
-
-        refSlider.addEventListener('input', function() {
-            var opacity = parseInt(this.value) / 100;
-            refValueDisplay.textContent = this.value + '%';
-            map.setPaintProperty(refLayerMap[currentRef], 'raster-opacity', opacity);
-        });
+        // (Base map selector is now handled above in the layer controls section)
 
         // =========================================================
         // GEOLOGY IDENTIFY (click-to-identify)
@@ -2069,8 +2040,6 @@
             var STORAGE_KEY = 'physicalearth_views';
 
             var layerControls = [
-                { id: 'hypso', toggle: 'hypso-toggle', opacity: 'hypso-opacity' },
-                { id: 'bathy', toggle: 'bathy-toggle', opacity: 'bathy-opacity' },
                 { id: 'hillshade', toggle: 'hillshade-toggle', opacity: 'hillshade-opacity' },
                 { id: 'contours', toggle: 'contours-toggle', opacity: 'contours-opacity' },
                 { id: 'rivers', toggle: 'rivers-toggle', opacity: 'rivers-opacity' },
@@ -2091,8 +2060,8 @@
                     lat: parseFloat(center.lat.toFixed(5)),
                     lng: parseFloat(center.lng.toFixed(5)),
                     z: parseFloat(map.getZoom().toFixed(2)),
-                    ref: currentRef,
-                    refOp: parseInt(refSlider.value),
+                    basemap: currentBasemap,
+                    basemapOp: parseInt(basemapSlider.value),
                     terrain: (document.getElementById('terrain-toggle').checked ? 1 : 0) + ',' + document.getElementById('terrain-exaggeration').value
                 };
                 layerControls.forEach(function(lc) {
@@ -2111,12 +2080,13 @@
                     });
                 }
 
-                if (state.ref) {
-                    setReferenceLayer(state.ref);
+                if (state.basemap) {
+                    basemapSelect.value = state.basemap;
+                    setBasemap(state.basemap);
                 }
-                if (state.refOp !== undefined) {
-                    refSlider.value = state.refOp;
-                    refSlider.dispatchEvent(new Event('input'));
+                if (state.basemapOp !== undefined) {
+                    basemapSlider.value = state.basemapOp;
+                    basemapSlider.dispatchEvent(new Event('input'));
                 }
 
                 // 3D Terrain
@@ -2160,8 +2130,8 @@
                 params.push('lat=' + state.lat);
                 params.push('lng=' + state.lng);
                 params.push('z=' + state.z);
-                params.push('ref=' + state.ref);
-                params.push('refOp=' + state.refOp);
+                params.push('basemap=' + state.basemap);
+                params.push('basemapOp=' + state.basemapOp);
                 if (state.terrain) params.push('terrain=' + state.terrain);
                 layerControls.forEach(function(lc) {
                     if (state[lc.id]) params.push(lc.id + '=' + state[lc.id]);
@@ -2176,7 +2146,7 @@
                     var kv = pair.split('=');
                     if (kv.length === 2) {
                         var key = kv[0], val = kv[1];
-                        if (key === 'lat' || key === 'lng' || key === 'z' || key === 'refOp') {
+                        if (key === 'lat' || key === 'lng' || key === 'z' || key === 'basemapOp') {
                             state[key] = parseFloat(val);
                         } else {
                             state[key] = val;
